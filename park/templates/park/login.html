@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" href="{% static 'img/logo.ico' %}">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+
+    <title>EZPARK</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="forms">
+        <div class="form login">
+          <span class="title">Login</span>
+
+          <form action="{% url 'login' %}" method="POST">
+            {% csrf_token %}
+            <div class="input-field">
+              <input type="text" placeholder="Username" name="username" required />
+              <i class="uil uil-envelope icon"></i>
+            </div>
+            <div class="input-field">
+              <input type="password" class="password" name="password" placeholder="Password" required />
+              <i class="uil uil-lock icon"></i>
+              <i class="uil uil-eye-slash showHidePw"></i>
+            </div>
+
+            <div class="checkbox-text">
+              <!-- <div class="checkbox-content">
+                <input type="checkbox" id="logCheck" />
+                <label for="logCheck" class="text">Remember me</label>
+              </div> -->
+
+              <a href="#" class="text">Forgot password?</a>
+            </div>
+
+            <div class="input-field button">
+              <input type="submit"  value="Login" />
+            </div>
+          </form>
+
+          <div class="login-signup">
+            <span class="text"
+              >Not a member?
+              <a href="#" class="text signup-link">Create an account.</a>
+            </span>
+          </div>
+        </div>
+
+        <!-- registration form -->
+
+        <div class="form signup">
+          <span class="title">Registration</span>
+
+          <form action="{% url 'register' %}" method="POST">
+            {% csrf_token %}
+            <div class="input-field">
+              <input type="text" placeholder="username" name="username"  required />
+              <i class="uil uil-user"></i>
+            </div>
+            <div class="input-field">
+              <input type="text" placeholder="Email" name="email" required />
+              <i class="uil uil-envelope icon"></i>
+            </div>
+            <div class="input-field">
+              <input type="password" class="password" name="password1" placeholder="Create password" required />
+              <i class="uil uil-lock icon"></i>
+            </div>
+            <div class="input-field">
+              <input type="password" class="password" name="password2" placeholder="Confirm password" required />
+              <i class="uil uil-lock icon"></i>
+              <i class="uil uil-eye-slash showHidePw"></i>
+            </div>
+
+            <div class="checkbox-text">
+              <div class="checkbox-content">
+                <input type="checkbox" id="termCon" required />
+                <label for="termCon" class="text">I accept all terms and conditions</label>
+              </div>
+            </div>
+
+            <div class="input-field button">
+              <input type="submit" value="Signup" />
+            </div>
+          </form>
+
+          <div class="login-signup">
+            <span class="text"
+              >Already have an account?
+              <a href="#" class="text login-link">Login here.</a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'js/login.js' %}"></script>
+  </body>
+</html>

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-j90rw98cf3*s2yg=d=%v^z9v^t^(k8vulhtrrk=+w20m)(m_j^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["xentromallpariking.ellequin.com", '127.0.0.1']
 
 
 # Application definition
@@ -38,8 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "cloudinary_storage",
-    "cloudinary",
+    'storages',
     'park'
 ]
 
@@ -85,6 +84,9 @@ DATABASES = {
     }
 }
 
+import dj_database_url
+
+DATABASES['default'] = dj_database_url.parse("postgres://hosted_user:QnajRBTJrwxSRfbV2yvH2pnwk5@192.168.1.228:5432/parking", conn_max_age=600)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -121,23 +123,52 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# CLOUDINARY_STORAGE = {
+#     "CLOUD_NAME": "dmagk9gck",
+#     "API_KEY": "964986345641993",
+#     "API_SECRET": "sDSJ1IXtdVjMrMAkGxABuvS2wmo",
+# }
+
+if DEBUG:
+    AWS_S3_ENDPOINT_LINK = "http://192.168.1.228:9012"
+    AWS_S3_USE_SSL = False 
+else:
+    AWS_S3_ENDPOINT_LINK = "https://minio.ellequin.com"
 
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+MINIO_ROOT_USER = "hosted"
+MINIO_ROOT_PASSWORD = "hostedwebsite"
+MINIO_BUCKET_NAME = "parking"
 
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
-CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": "dmagk9gck",
-    "API_KEY": "964986345641993",
-    "API_SECRET": "sDSJ1IXtdVjMrMAkGxABuvS2wmo",
-}
+AWS_ACCESS_KEY_ID = MINIO_ROOT_USER
+AWS_SECRET_ACCESS_KEY = MINIO_ROOT_PASSWORD
+AWS_STORAGE_BUCKET_NAME = MINIO_BUCKET_NAME
+AWS_S3_ENDPOINT_URL = f"{AWS_S3_ENDPOINT_LINK}"
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+AWS_S3_FILE_OVERWRITE = False
+
+
+MINIO_ACCESS_URL = f"{AWS_S3_ENDPOINT_LINK}/{MINIO_BUCKET_NAME}"
+
+
+
+CSRF_TRUSTED_ORIGINS = ['https://xentromallpariking.ellequin.com']
+CORS_ORIGIN_WHITELIST = ['https://xentromallpariking.ellequin.com']

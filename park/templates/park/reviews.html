@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="{% static 'img/logo.ico' %}">
+        <link rel="stylesheet" href="{% static 'css/landingpage.css' %}">
+        <script src="{% static 'js/landingpage.js' %}" defer></script>
+        <script src="https://unpkg.com/scrollreveal"></script>
+        <link rel="stylesheet" 
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer"
+        />
+
+        <title>EZPARK</title>
+
+</head>
+<body>
+    <!-- navbar -->
+    <nav>
+        <a href="{% url 'landing' %}" class="brand">
+            <h1><b class="accent">EZ</b><b class="black">PARK</b></h1>
+        </a>
+        <div class="menu">
+            <div class="btn">
+                <i class="fas fa-times close-btn"></i>
+            </div>
+            <a href="{% url 'landing' %}">HOME</a>
+            <a href="{% url 'about' %}">ABOUT</a>
+            <a href="{% url 'services' %}">SERVICES</a>
+            <a href="{% url 'reviews' %}">REVIEWS</a>
+        </div>
+
+        <button class="btn-2" onclick='window.location.href="{% url "login" %}"'>
+            Go to Reviews
+        </button>
+
+        <div class="btn">
+            <i class="fas fa-bars menu-btn"></i>
+        </div>
+     </nav>
