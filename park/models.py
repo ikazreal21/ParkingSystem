@@ -11,6 +11,7 @@ from django.db import models
 class ParkingSpot(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     spot_number = models.IntegerField()
+    name = models.CharField(max_length=255)
     is_reserved = models.BooleanField(default=False)
     is_occupied = models.BooleanField(default=False)
     is_handicapped = models.BooleanField(default=False)
