@@ -1,0 +1,8 @@
+{% extends 'park/base.html' %}
+{% block content %}
+<div class="alert alert-danger text-center">
+    <h4>Error</h4>
+    <p>{{ message }}</p>
+    <a href="{% url 'current' %}" class="btn btn-primary mt-3">Back to Reservations</a>
+</div>
+{% endblock %}

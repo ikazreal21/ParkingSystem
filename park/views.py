@@ -23,6 +23,7 @@ import qrcode
 import qrcode.image.svg
 from io import BytesIO
 from django.core.files.base import ContentFile
+from django.http import Http404
 
 # @login_required(login_url='login')
 def LandingPage(request):
@@ -38,15 +39,18 @@ def Reviews(request):
     return render(request, 'park/reviews.html')
 
 def Login(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect("dashboard")
-        else:
-            messages.info(request, "Username or Password is Incorrect")
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    else:
+        if request.method == "POST":
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect("dashboard")
+            else:
+                messages.info(request, "Username or Password is Incorrect")
     return render(request, 'park/login.html')
 
 def Register(request):
@@ -193,7 +197,7 @@ def reserve_spot(request):
         )
         reservation_qr.qr.save(f"qr_{reservation.id}.png", ContentFile(buffer.getvalue()), save=True)
 
-        return redirect('reservations')
+        return redirect('current')
 
     spots = ParkingSpot.objects.filter(is_reserved=False, is_occupied=False)
     return render(request, 'park/reserve_spot.html', {'spots': spots})
@@ -204,13 +208,13 @@ def cancel_reservation(request, reservation_id):
     reservation.spot.is_reserved = False
     reservation.spot.save()
     reservation.delete()
-    return redirect('reservations')
+    return redirect('current')
 
 # Parked vehicle views
 @login_required(login_url='login')
 def parked_vehicles(request):
     parked = Parked.objects.filter(user=request.user, is_active=True)
-    return render(request, 'parked_vehicles.html', {'parked': parked})
+    return render(request, 'park/parked_vehicles.html', {'parked': parked})
 
 @login_required(login_url='login')
 def park_vehicle(request):
@@ -245,3 +249,27 @@ def unpark_vehicle(request, parked_id):
     parked.spot.save()
     parked.save()
     return redirect('parked_vehicles')
+
+@login_required(login_url='login')
+def view_qr(request, reservation_id):
+    try:
+        # Fetch the reservation with the given ID and ensure it is active
+        reservation = get_object_or_404(Parked, id=reservation_id, is_active=True)
+
+        # Log debug information (optional)
+        print(f"Reservation ID: {reservation_id}")
+        print(f"Reservation: {reservation}")
+
+        # Render the QR view template
+        return render(request, 'park/view_qr.html', {'reservation': reservation})
+    except Http404:
+        # Handle the case where the reservation is not found or not active
+        return render(request, 'park/error.html', {
+            'message': "The reservation you are trying to view does not exist or is no longer active."
+        })
+    except Exception as e:
+        # Handle any unexpected errors
+        print(f"Unexpected error: {e}")
+        return render(request, 'park/error.html', {
+            'message': "An unexpected error occurred. Please try again later."
+        })

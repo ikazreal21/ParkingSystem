@@ -1,0 +1,88 @@
+{% extends 'park/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Parking Spots</h1>
+<div class="row mb-5">
+    {% for spot in spots %}
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Spot {{ spot.spot_number }}: {{ spot.name }}</h5>
+                <p class="card-text">
+                    {% if spot.is_reserved %}
+                        <span class="text-danger">Reserved</span>
+                    {% elif spot.is_occupied %}
+                        <span class="text-warning">Occupied</span>
+                    {% else %}
+                        <span class="text-success">Available</span>
+                    {% endif %}
+                </p>
+                {% if not spot.is_reserved and not spot.is_occupied %}
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#reserveModal"
+                    data-spot-id="{{ spot.id }}"
+                    data-spot-name="{{ spot.name }}"
+                >
+                    Book this
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Reserve Modal -->
+<div class="modal fade" id="reserveModal" tabindex="-1" aria-labelledby="reserveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="reserveForm" method="post" action="{% url 'reserve_spot' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reserveModalLabel">Reserve Spot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="spot_id" id="modalSpotId">
+                    <div class="mb-3">
+                        <label for="modalSpotName" class="form-label">Spot</label>
+                        <input type="text" id="modalSpotName" class="form-control" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_time" class="form-label">Start Time</label>
+                        <input type="datetime-local" name="start_time" id="start_time" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_time" class="form-label">End Time</label>
+                        <input type="datetime-local" name="end_time" id="end_time" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reserve</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const reserveModal = document.getElementById('reserveModal');
+    reserveModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget; // Button that triggered the modal
+        const spotId = button.getAttribute('data-spot-id');
+        const spotName = button.getAttribute('data-spot-name');
+        
+        // Populate the modal fields with spot data
+        document.getElementById('modalSpotId').value = spotId;
+        document.getElementById('modalSpotName').value = spotName;
+    });
+});
+</script>
+{% endblock %}
+

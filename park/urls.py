@@ -17,6 +17,8 @@ urlpatterns = [
     path('available/', views.parking_spots, name="available"),
     path('current/', views.parked_vehicles, name="current"),
     path('reserved/', views.reservations, name="reserved"),
+    path('reserve_spot/', views.reserve_spot, name="reserve_spot"),
+    path('view_qr/<str:reservation_id>', views.view_qr, name='view_qr'),
     # path('history/', views.History, name="history"),
 
     # Auth
