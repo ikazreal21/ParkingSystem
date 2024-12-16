@@ -16,5 +16,5 @@ admin.site.register(Parked)
 
 
 
-admin.site.site_title = "Parking Admin"
-admin.site.site_header = "Parking Admin"
+admin.site.site_title = "Victory Mall Parking Admin"
+admin.site.site_header = "Victory Mall Parking Admin"

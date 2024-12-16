@@ -13,14 +13,14 @@
         integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer"
         />
 
-        <title>EZPARK</title>
+        <title>Victory Mall</title>
 
 </head>
 <body>
     <!-- navbar -->
    <nav>
         <a href="{% url 'landing' %}" class="brand">
-            <h1><b class="accent">EZ</b><b class="black">PARK</b></h1>
+            <h1><b class="accent">Victory Mall </b><b class="black">Parking</b></h1>
         </a>
         <div class="menu">
             <div class="btn">
@@ -52,7 +52,7 @@
             <p>
                 With EZPARK, you’ll discover convenience, security, and efficiency every step of the way. We’re committed to revolutionizing urban mobility by creating smarter, more connected cities where parking is easy and accessible for everyone.
             </p>
-            <button class="btn-2 btn-hero" onclick="window.location.href='login.html'">
+            <button class="btn-2 btn-hero"  onclick='window.location.href="{% url "login" %}"'>
                 RESERVE HERE!
             </button>
             <div class="download-buttons">

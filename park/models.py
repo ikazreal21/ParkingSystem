@@ -19,10 +19,13 @@ class ParkingSpot(models.Model):
     is_vip = models.BooleanField(default=False)
 
     def __str__(self):
-        return str(self.spot_number)
+        return f"{self.name} - {str(self.spot_number)}"
     
     def get_spot_number(self):
         return self.spot_number
+
+    class Meta:
+        verbose_name_plural = "Parking Spot"
 
 
 class Reservation(models.Model):
@@ -37,6 +40,11 @@ class Reservation(models.Model):
     def __str__(self):
         return str(self.user) + " " + str(self.spot) + " " + str(self.start_time) + " " + str(self.end_time)
     
+        
+    class Meta:
+        verbose_name_plural = "Reservations"
+
+    
 class Parked(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -48,3 +56,6 @@ class Parked(models.Model):
 
     def __str__(self):
         return str(self.user) + " " + str(self.spot) + " " + str(self.start_time) + " " + str(self.end_time)
+
+    class Meta:
+        verbose_name_plural = "Parked"

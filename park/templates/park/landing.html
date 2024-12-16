@@ -13,14 +13,14 @@
         integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer"
         />
 
-        <title>EZPARK</title>
+        <title>Victory Mall</title>
 
 </head>
 <body>
     <!-- navbar -->
      <nav>
         <a href="{% url 'landing' %}" class="brand">
-            <h1><b class="accent">EZ</b><b class="black">PARK</b></h1>
+            <h1><b class="accent">Victory Mall </b><b class="black">Parking</b></h1>
         </a>
         <div class="menu">
             <div class="btn">
@@ -102,14 +102,14 @@
                 <div class="callout-buttons">
                     <button
                     class="btn-2 btn-callout"
-                    onclick="window.location.href='services.html'">
+                    onclick='window.location.href="{% url "services" %}"'
                 <p>Our Services</p>
                 <i class="fa-solid fa-arrow-right-long">
                 </i>
                 </button>
                 <button
                     class="btn-2 btn-callout-black"
-                    onclick="window.location.href='login.html'">
+                    onclick='window.location.href="{% url "login" %}"'
                 <p>Reserve Now</p>
                 <i class="fa-solid fa-bookmark">
                 </i>
