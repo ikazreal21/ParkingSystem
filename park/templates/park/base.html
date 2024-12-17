@@ -1,4 +1,5 @@
 {% load static %}
+{% load pwa %}
 <!DOCTYPE html>
 <html
   lang="en"
@@ -9,6 +10,7 @@
   data-template="vertical-menu-template-free"
 >
   <head>
+    {% progressive_web_app_meta %}
     <meta charset="utf-8" />
     <meta
       name="viewport"

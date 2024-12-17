@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'storages',
-    'park'
+    'park',
+    'pwa'
 ]
 
 MIDDLEWARE = [
@@ -172,3 +173,36 @@ MINIO_ACCESS_URL = f"{AWS_S3_ENDPOINT_LINK}/{MINIO_BUCKET_NAME}"
 
 CSRF_TRUSTED_ORIGINS = ['https://divimartpariking.ellequin.com']
 CORS_ORIGIN_WHITELIST = ['https://divimartpariking.ellequin.com']
+
+PWA_APP_NAME = 'EZPARK-APP'
+PWA_APP_DESCRIPTION = "Divimart Parking Application"
+PWA_APP_THEME_COLOR = '#FECB21'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = 'https://divimartpariking.ellequin.com'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+PWA_APP_ICONS = [
+    {
+        'src': 'https://minio.ellequin.com/parking/img/logo.png',
+        'sizes': '512x512'
+    }
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        'src': 'https://minio.ellequin.com/parking/img/logo.png',
+        'sizes': '512x512'
+    }
+]
+PWA_APP_SPLASH_SCREEN = [
+    {
+        'src': 'https://minio.ellequin.com/parking/img/logo.png',
+        'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
+    }
+]
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'en-PH'
+PWA_APP_DISPLAY_OVERRIDE = {
+    
+}
