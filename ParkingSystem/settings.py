@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-j90rw98cf3*s2yg=d=%v^z9v^t^(k8vulhtrrk=+w20m)(m_j^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["xentromallpariking.ellequin.com", '127.0.0.1']
+ALLOWED_HOSTS = ["divimartpariking.ellequin.com", '127.0.0.1']
 
 
 # Application definition
@@ -170,5 +170,5 @@ MINIO_ACCESS_URL = f"{AWS_S3_ENDPOINT_LINK}/{MINIO_BUCKET_NAME}"
 
 
 
-CSRF_TRUSTED_ORIGINS = ['https://xentromallpariking.ellequin.com']
-CORS_ORIGIN_WHITELIST = ['https://xentromallpariking.ellequin.com']
+CSRF_TRUSTED_ORIGINS = ['https://divimartpariking.ellequin.com']
+CORS_ORIGIN_WHITELIST = ['https://divimartpariking.ellequin.com']
