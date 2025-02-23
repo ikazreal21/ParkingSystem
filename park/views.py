@@ -331,8 +331,8 @@ def AssetLink(request):
             "relation": ["delegate_permission/common.handle_all_urls"],
             "target": {
             "namespace": "android_app",
-            "package_name": "xyz.appmaker.fxyxqa",
-            "sha256_cert_fingerprints": ["2D:82:EC:36:85:BE:4C:A0:31:E0:71:DC:DB:37:4E:C9:1E:A8:44:97:7E:28:A6:CD:19:12:C6:C5:C8:8D:EA:81"]
+            "package_name": "xyz.appmaker.bzgupr",
+            "sha256_cert_fingerprints": ["CB:CF:36:39:7F:11:7D:F4:EA:46:C9:CE:8F:A1:FF:D0:BA:D8:F8:BB:ED:BC:A7:2F:33:58:32:A8:AA:D3:D0:63"]
             }
         }
     ]
