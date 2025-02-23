@@ -24,6 +24,9 @@ urlpatterns = [
     path('view_qr/<str:reservation_id>', views.view_qr, name='view_qr'),
     # path('history/', views.History, name="history"),
 
+    path('calendar/', views.calendar_view, name="calendar"),
+    path('reservation_date/<str:selected_date>', views.reservations_by_date, name="reservations_by_date"),
+
     # pwa
     url(r'^serviceworker\.js$', service_worker, name='serviceworker'),
     url(r'^manifest\.json$', manifest, name='manifest'),

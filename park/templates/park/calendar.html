@@ -1,0 +1,40 @@
+{% extends 'park/base.html' %}
+{% block content %}
+<div class="card">
+    <h5 class="card-header">Calendar</h5>
+    <div class="flex justify-between items-center p-4">
+        <button class="px-4 py-2 bg-gray-200 rounded" onclick="window.location='?month={{ current_month|add:-1 }}&year={{ current_year }}'">Previous</button>
+        <h2 class="text-lg font-bold">{{ current_month }}/{{ current_year }}</h2>
+        <button class="px-4 py-2 bg-gray-200 rounded" onclick="window.location='?month={{ current_month|add:1 }}&year={{ current_year }}'">Next</button>
+    </div>
+    <table class="w-full border-collapse">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="p-2">Mon</th>
+                <th class="p-2">Tue</th>
+                <th class="p-2">Wed</th>
+                <th class="p-2">Thu</th>
+                <th class="p-2">Fri</th>
+                <th class="p-2">Sat</th>
+                <th class="p-2">Sun</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in weeks %}
+                <tr>
+                    {% for day in week %}
+                        <td class="p-2 border h-16">
+                            {% if day %}
+                                <a href="{% url 'reservations_by_date' day %}"
+                                   class="block w-full h-full text-center p-2 rounded-lg {% if day in reserved_dates %}bg-red-500 text-white{% else %}bg-gray-100{% endif %}">
+                                    {{ day.day }}
+                                </a>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

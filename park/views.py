@@ -25,6 +25,14 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.http import Http404
 
+from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils.dateparse import parse_date
+from calendar import monthrange
+from datetime import datetime, date, timedelta
+
 # @login_required(login_url='login')
 def LandingPage(request):
     return render(request, 'park/landing.html')
@@ -274,6 +282,48 @@ def view_qr(request, reservation_id):
             'message': "An unexpected error occurred. Please try again later."
         })
     
+
+# Calendar 
+@login_required(login_url='login')
+def calendar_view(request):
+    today = date.today()
+    month = int(request.GET.get('month', today.month))
+    year = int(request.GET.get('year', today.year))
+    start_day = date(year, month, 1)
+    days_in_month = monthrange(year, month)[1]
+    reservations = Reservation.objects.filter(start_time__date__year=year, start_time__date__month=month)
+    reserved_dates = {res.start_time.date() for res in reservations}
+    first_weekday = start_day.weekday()
+    calendar_days = []
+    # Fill in the empty days at the start of the month
+    for _ in range(first_weekday):
+        calendar_days.append(None)
+    # Fill in the days of the current month
+    for day in range(1, days_in_month + 1):
+        calendar_days.append(date(year, month, day))
+    # Ensure the total days fill complete weeks (42 days for 6 weeks)
+    while len(calendar_days) % 7 != 0:
+        calendar_days.append(None)
+    # Split days into weeks
+    weeks = [calendar_days[i:i + 7] for i in range(0, len(calendar_days), 7)]
+
+    context = {
+        'weeks': weeks,
+        'reserved_dates': reserved_dates,
+        'current_month': month,
+        'current_year': year,
+    }
+    return render(request, 'park/calendar.html', context)
+
+# Reservations by Date View
+@login_required(login_url='login')
+def reservations_by_date(request, selected_date):
+    date_obj = parse_date(selected_date)
+    reservations = Reservation.objects.filter(start_time__date=date_obj)
+    context = {'reservations': reservations}
+    return render(request, 'park/reservations_by_date.html', context)
+
+
 # PWA
 def AssetLink(request):
     assetlink = [
