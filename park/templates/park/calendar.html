@@ -26,7 +26,7 @@
                         <td class="p-2 border h-16">
                             {% if day %}
                                 <a href="{% url 'reservations_by_date' day %}"
-                                   class="block w-full h-full text-center p-2 rounded-lg {% if day in reserved_dates %}bg-red-500 text-white{% else %}bg-gray-100{% endif %}">
+                                   class="block w-full h-full text-center p-2 rounded-lg {% if day in reserved_dates %}bg-red-500 text-black{% else %}bg-gray-100{% endif %}">
                                     {{ day.day }}
                                 </a>
                             {% endif %}
