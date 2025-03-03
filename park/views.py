@@ -32,6 +32,7 @@ from django.urls import reverse
 from django.utils.dateparse import parse_date
 from calendar import monthrange
 from datetime import datetime, date, timedelta
+from django.utils.timezone import make_aware
 
 # @login_required(login_url='login')
 def LandingPage(request):
@@ -173,41 +174,57 @@ def reservations(request):
 
 @login_required(login_url='login')
 def reserve_spot(request):
+    spots = ParkingSpot.objects.filter(is_reserved=False, is_occupied=False)
+
     if request.method == 'POST':
         spot_id = request.POST['spot_id']
-        start_time = request.POST['start_time']
-        end_time = request.POST['end_time']
+        start_time = make_aware(datetime.strptime(request.POST['start_time'], "%Y-%m-%dT%H:%M"))
+        end_time = make_aware(datetime.strptime(request.POST['end_time'], "%Y-%m-%dT%H:%M"))
 
         spot = get_object_or_404(ParkingSpot, id=spot_id)
-        if spot.is_reserved or spot.is_occupied:
-            return JsonResponse({'error': 'Spot is already reserved or occupied'}, status=400)
 
+        # Check if the spot is already occupied
+        if spot.is_occupied:
+            messages.info(request, 'Spot is already reserved or occupied')
+            return redirect('available')
+        # Check for overlapping reservations
+        existing_reservations = Reservation.objects.filter(
+            spot=spot,
+            end_time__gt=start_time,  # Ends after the new start time
+            start_time__lt=end_time    # Starts before the new end time
+        )
+
+        if existing_reservations.exists():
+            messages.info(request, 'Spot is already reserved or occupied')
+            return redirect('available')
+
+        # Create the reservation with status "Pending"
         reservation = Reservation.objects.create(
             user=request.user,
             spot=spot,
             start_time=start_time,
-            end_time=end_time
+            end_time=end_time,
+            status="pending"  # Set initial status
         )
         spot.is_reserved = True
         spot.save()
 
         # Generate QR code
-        qr_data = f"Reservation ID: {reservation.id}\nUser: {request.user.username}\nSpot: {spot.spot_number}\nStart: {start_time}\nEnd: {end_time}"
+        qr_data = f"{reservation.id}"
         qr = qrcode.make(qr_data)
         buffer = BytesIO()
         qr.save(buffer, format="PNG")
-        reservation_qr = Parked.objects.create(
-            user=request.user,
-            spot=spot,
-            start_time=start_time,
-            end_time=end_time,
-            is_active=True
-        )
-        reservation_qr.qr.save(f"qr_{reservation.id}.png", ContentFile(buffer.getvalue()), save=True)
 
-        return redirect('current')
+        # Attach QR code to reservation object
+        reservation.qr.save(f"qr_{reservation.spot.name}.png", ContentFile(buffer.getvalue()), save=True)
 
-    spots = ParkingSpot.objects.filter(is_reserved=False, is_occupied=False)
+        # Save the buffer content as an image response
+        buffer.seek(0)  # Move to the beginning of the buffer
+        response = HttpResponse(buffer.read(), content_type="image/png")
+        response["Content-Disposition"] = f"attachment; filename=reservation_{reservation.id}.png"
+        return response
+
+    # Fetch available spots
     return render(request, 'park/reserve_spot.html', {'spots': spots})
 
 @login_required(login_url='login')
@@ -323,6 +340,13 @@ def reservations_by_date(request, selected_date):
     context = {'reservations': reservations}
     return render(request, 'park/reservations_by_date.html', context)
 
+
+@login_required(login_url='login')
+def reservations_by_spot(request, pk):
+    spot_obj = ParkingSpot.objects.get(id=pk)
+    reservations = Reservation.objects.filter(spot=spot_obj)
+    context = {'reservations': reservations, 'spot': spot_obj}
+    return render(request, 'park/reservations_by_spot.html', context)
 
 # PWA
 def AssetLink(request):

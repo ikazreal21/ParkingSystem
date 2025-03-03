@@ -1,0 +1,32 @@
+{% extends 'park/base.html' %}
+{% block content %}
+<div class="card">
+    <h5 class="card-header">Reservation History for Spot {{ spot.spot_number }}</h5>
+    <div class="table-responsive text-nowrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Spot Name</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                {% if reservations %}
+                    {% for reservation in reservations %}
+                        <tr>
+                            <td>{{ reservation.spot.name }}</td>
+                            <td>{{ reservation.start_time|date:"M d, Y h:i A" }}</td>
+                            <td>{{ reservation.end_time|date:"M d, Y h:i A" }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No reservations found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

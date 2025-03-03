@@ -2,23 +2,40 @@
 {% load static %}
 
 {% block content %}
+
+{% if messages %}
+    {% for message in messages %}
+    {% if message.tags == 'error' %}
+        <div class="alert alert-danger alert-left-bordered border-danger alert-dismissible d-flex align-items-center p-md-4 mb-2 fade show" 		role="alert">
+            <i class="gd-flag-alt-2 icon-text text-warning mr-2"></i>
+            <p class="mb-0">
+                <strong>{{ message }}</strong> 
+            </p>
+        </div>
+    {% else %}
+        <div class="alert alert-success alert-left-bordered border-warning alert-dismissible d-flex align-items-center p-md-4 mb-2 fade show" 		role="alert">
+            <i class="gd-flag-alt-2 icon-text text-warning mr-2"></i>
+            <p class="mb-0">
+                <strong>{{ message }}</strong> 
+            </p>
+        </div>
+    {% endif %}
+    {% endfor %}
+{% endif %}
 <h1>Parking Spots</h1>
 <div class="row mb-5">
     {% for spot in spots %}
     <div class="col-md-6 col-lg-4 mb-3">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Spot {{ spot.spot_number }}: {{ spot.name }}</h5>
+                <h5 class="card-title"><a href="{% url 'reservation_spot' spot.id  %}">Spot {{ spot.spot_number }}: {{ spot.name }}</a></h5>
                 <p class="card-text">
-                    {% if spot.is_reserved %}
-                        <span class="text-danger">Reserved</span>
-                    {% elif spot.is_occupied %}
-                        <span class="text-warning">Occupied</span>
+                    {% if spot.is_occupied %}
+                        <span class="text-danger">Occupied</span>
                     {% else %}
                         <span class="text-success">Available</span>
                     {% endif %}
                 </p>
-                {% if not spot.is_reserved and not spot.is_occupied %}
                 <button
                     type="button"
                     class="btn btn-primary"
@@ -29,7 +46,6 @@
                 >
                     Book this
                 </button>
-                {% endif %}
             </div>
         </div>
     </div>

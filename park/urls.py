@@ -26,6 +26,7 @@ urlpatterns = [
 
     path('calendar/', views.calendar_view, name="calendar"),
     path('reservation_date/<str:selected_date>', views.reservations_by_date, name="reservations_by_date"),
+    path('reservation_spot/<str:pk>', views.reservations_by_spot, name="reservation_spot"),
 
     # pwa
     url(r'^serviceworker\.js$', service_worker, name='serviceworker'),
