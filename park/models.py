@@ -32,6 +32,7 @@ class Reservation(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('parked', 'Currently Parked'),
+        ('complete', 'Complete'),
         ('expired', 'Expired')
     ]
 
@@ -66,8 +67,8 @@ class Parked(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     spot = models.ForeignKey(ParkingSpot, on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    start_time = models.DateTimeField(blank=True, null=True)
+    end_time = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     qr = models.ImageField(upload_to='qr_codes', blank=True)
 

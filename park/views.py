@@ -14,7 +14,7 @@ from .utils import *
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 from .models import *
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -33,6 +33,8 @@ from django.utils.dateparse import parse_date
 from calendar import monthrange
 from datetime import datetime, date, timedelta
 from django.utils.timezone import make_aware
+
+import pytz
 
 # @login_required(login_url='login')
 def LandingPage(request):
@@ -118,6 +120,8 @@ def Dashboard(request):
 @login_required(login_url='login')
 def parking_spots(request):
     spots = ParkingSpot.objects.all()
+    # print(request.get_host())
+
     return render(request, 'park/parking_spots.html', {'spots': spots})
 
 @login_required(login_url='login')
@@ -210,7 +214,7 @@ def reserve_spot(request):
         spot.save()
 
         # Generate QR code
-        qr_data = f"{reservation.id}"
+        qr_data = f"{request.get_host()}/scan_to_occupy/{reservation.id}"
         qr = qrcode.make(qr_data)
         buffer = BytesIO()
         qr.save(buffer, format="PNG")
@@ -218,10 +222,11 @@ def reserve_spot(request):
         # Attach QR code to reservation object
         reservation.qr.save(f"qr_{reservation.spot.name}.png", ContentFile(buffer.getvalue()), save=True)
 
+        
         # Save the buffer content as an image response
         buffer.seek(0)  # Move to the beginning of the buffer
         response = HttpResponse(buffer.read(), content_type="image/png")
-        response["Content-Disposition"] = f"attachment; filename=reservation_{reservation.id}.png"
+        response["Content-Disposition"] = f"attachment; filename=reservation_{reservation.spot.name}.png"
         return response
 
     # Fetch available spots
@@ -238,7 +243,7 @@ def cancel_reservation(request, reservation_id):
 # Parked vehicle views
 @login_required(login_url='login')
 def parked_vehicles(request):
-    parked = Parked.objects.filter(user=request.user, is_active=True)
+    parked = Reservation.objects.filter(user=request.user, status="pending")
     return render(request, 'park/parked_vehicles.html', {'parked': parked})
 
 @login_required(login_url='login')
@@ -347,6 +352,64 @@ def reservations_by_spot(request, pk):
     reservations = Reservation.objects.filter(spot=spot_obj)
     context = {'reservations': reservations, 'spot': spot_obj}
     return render(request, 'park/reservations_by_spot.html', context)
+
+def scan_to_occupy(request, pk):
+    reservation = get_object_or_404(Reservation, id=pk)
+    spot = get_object_or_404(ParkingSpot, id=reservation.spot.id)
+
+
+    
+    # Convert all times to the same timezone (e.g., system's local timezone)
+    user_timezone = pytz.timezone('Asia/Manila')  # Change this to your desired timezone
+    
+    # Convert reservation times
+    # start_time = reservation.start_time.astimezone(user_timezone)
+    # end_time = reservation.end_time.astimezone(user_timezone)
+    
+    # Get current time in the same timezone
+    current_time = localtime(now(), user_timezone)
+
+    # Format times in 12-hour format
+    def format_time(dt):
+        return dt.strftime('%Y-%m-%d %I:%M:%S %p %z')  # 12-hour format with timezone
+
+    print("Start Time:", format_time(reservation.start_time))
+    print("Current Time:", format_time(current_time))
+    print("End Time:", format_time(reservation.end_time))
+
+    if format_time(reservation.start_time) <= format_time(current_time) <= \
+        format_time(reservation.end_time):
+        if reservation.spot.is_occupied:
+            # If already occupied, unoccupy it
+            reservation.spot.is_occupied = False
+            reservation.spot.is_reserved = False
+            reservation.status = "complete"
+
+            parked = Parked.objects.create(
+                user=request.user,
+                spot=spot,
+                start_time=reservation.start_time,
+                end_time=current_time
+            )
+        else:
+            # Otherwise, mark it as occupied
+            reservation.spot.is_occupied = True
+            reservation.spot.is_reserved = False
+            reservation.status = "parked"
+
+            parked = Parked.objects.create(
+                user=request.user,
+                spot=spot,
+                start_time=current_time,
+                end_time=None
+            )
+
+        reservation.spot.save()
+        reservation.save()
+    else:
+        return JsonResponse({'error': 'Invalid reservation: not within the reserved time'}, status=400)
+
+    return redirect('dashboard')
 
 # PWA
 def AssetLink(request):

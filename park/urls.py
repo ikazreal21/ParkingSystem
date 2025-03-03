@@ -35,6 +35,10 @@ urlpatterns = [
 
     path(".well-known/assetlinks.json", views.AssetLink),
 
+    # Scan
+    path("scan_to_occupy/<str:pk>", views.scan_to_occupy, name="scan_to_occupy"),
+
+
     # Auth
     path("login/", views.Login, name="login"),
     path("register/", views.Register, name="register"),
