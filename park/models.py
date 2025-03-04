@@ -3,10 +3,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 import locale
 import uuid
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 from django.core.files.storage import FileSystemStorage
 from django.db import models
-
+import pytz
 
 class ParkingSpot(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -45,6 +45,16 @@ class Reservation(models.Model):
     is_active = models.BooleanField(default=True)
     qr = models.ImageField(upload_to='qr_codes', blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+    def get_local_start_time(self):
+        """ Get start_time in Asia/Manila timezone without saving """
+        manila_tz = pytz.timezone('Asia/Manila')
+        return self.start_time.astimezone(manila_tz) if self.start_time else None
+
+    def get_local_end_time(self):
+        """ Get end_time in Asia/Manila timezone without saving """
+        manila_tz = pytz.timezone('Asia/Manila')
+        return self.end_time.astimezone(manila_tz) if self.end_time else None
     
     def update_status(self):
         """ Update the status based on the current time """

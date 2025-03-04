@@ -34,6 +34,8 @@ from calendar import monthrange
 from datetime import datetime, date, timedelta
 from django.utils.timezone import make_aware
 
+from django.contrib.auth.models import AnonymousUser
+
 import pytz
 
 # @login_required(login_url='login')
@@ -362,43 +364,45 @@ def scan_to_occupy(request, pk):
     # Convert all times to the same timezone (e.g., system's local timezone)
     user_timezone = pytz.timezone('Asia/Manila')  # Change this to your desired timezone
     
-    # Convert reservation times
-    # start_time = reservation.start_time.astimezone(user_timezone)
-    # end_time = reservation.end_time.astimezone(user_timezone)
-    
-    # Get current time in the same timezone
-    current_time = localtime(now(), user_timezone)
+    start_time = reservation.start_time.replace(tzinfo=None)
+    end_time = reservation.end_time.replace(tzinfo=None)
+
+    # Get the current server time and remove timezone
+    current_time = localtime(now()).replace(tzinfo=None)
 
     # Format times in 12-hour format
     def format_time(dt):
-        return dt.strftime('%Y-%m-%d %I:%M:%S %p %z')  # 12-hour format with timezone
+        return dt.strftime('%Y-%m-%d %I:%M:%S')  # 12-hour format with timezone
 
-    print("Start Time:", format_time(reservation.start_time))
-    print("Current Time:", format_time(current_time))
-    print("End Time:", format_time(reservation.end_time))
+    print("Start Time:", start_time)
+    print("Current Time:", current_time)
+    print("End Time:", end_time)
 
-    if format_time(reservation.start_time) <= format_time(current_time) <= \
-        format_time(reservation.end_time):
+    if start_time <= current_time <= \
+        end_time:
         if reservation.spot.is_occupied:
             # If already occupied, unoccupy it
             reservation.spot.is_occupied = False
             reservation.spot.is_reserved = False
             reservation.status = "complete"
 
-            parked = Parked.objects.create(
-                user=request.user,
-                spot=spot,
-                start_time=reservation.start_time,
-                end_time=current_time
-            )
+            parked_user = request.user if request.user and not isinstance(request.user, AnonymousUser) else reservation.user
+            parked_user_exist = Parked.objects.filter(user=parked_user, spot=spot, end_time=None, is_active=True).first()
+
+            parked_user_exist.end_time = current_time
+            parked_user_exist.is_active = False
+            parked_user_exist.save()
+            
         else:
             # Otherwise, mark it as occupied
             reservation.spot.is_occupied = True
             reservation.spot.is_reserved = False
             reservation.status = "parked"
 
-            parked = Parked.objects.create(
-                user=request.user,
+            parked_user = request.user if request.user and not isinstance(request.user, AnonymousUser) else reservation.user
+
+            Parked.objects.create(
+                user=parked_user,
                 spot=spot,
                 start_time=current_time,
                 end_time=None
@@ -410,6 +414,10 @@ def scan_to_occupy(request, pk):
         return JsonResponse({'error': 'Invalid reservation: not within the reserved time'}, status=400)
 
     return redirect('dashboard')
+
+
+def termsandconditions(request):
+    return render(request, 'park/termsandcondition.html')
 
 # PWA
 def AssetLink(request):

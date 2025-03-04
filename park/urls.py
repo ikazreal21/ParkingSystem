@@ -38,6 +38,9 @@ urlpatterns = [
     # Scan
     path("scan_to_occupy/<str:pk>", views.scan_to_occupy, name="scan_to_occupy"),
 
+    # Terms and Conditions
+    path("terms/", views.termsandconditions, name="terms"),
+
 
     # Auth
     path("login/", views.Login, name="login"),
