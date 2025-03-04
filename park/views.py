@@ -368,18 +368,18 @@ def scan_to_occupy(request, pk):
     end_time = reservation.end_time.replace(tzinfo=None)
 
     # Get the current server time and remove timezone
-    current_time = localtime(now()).replace(tzinfo=None)
+    current_time = localtime(now(), user_timezone)
 
     # Format times in 12-hour format
     def format_time(dt):
         return dt.strftime('%Y-%m-%d %I:%M:%S')  # 12-hour format with timezone
 
-    print("Start Time:", start_time)
+    print("Start Time:", reservation.get_local_start_time())
     print("Current Time:", current_time)
-    print("End Time:", end_time)
+    print("End Time:", reservation.get_local_end_time())
 
-    if start_time <= current_time <= \
-        end_time:
+    if reservation.get_local_start_time() <= current_time <= \
+        reservation.get_local_end_time():
         if reservation.spot.is_occupied:
             # If already occupied, unoccupy it
             reservation.spot.is_occupied = False
