@@ -1,11 +1,9 @@
-{% load static %}
-{% load pwa %}
-<!doctype html>
+{% load static %} {% load pwa %}
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
-  {% progressive_web_app_meta %}
-  <meta charset="utf-8">
+  <head>
+    {% progressive_web_app_meta %}
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="{% static 'img/logo.ico' %}" />
     <link rel="stylesheet" href="{% static 'css/landingpage.css' %}" />
@@ -19,28 +17,27 @@
       referrerpolicy="no-referrer"
     />
 
-        <title>Divi Mart</title>
-
-</head>
-<body>
+    <title>TCT</title>
+  </head>
+  <body>
     <!-- navbar -->
     <nav>
-        <a href="{% url 'landing' %}" class="brand">
-            <h1><b class="accent">Divi Mart </b><b class="black">Parking</b></h1>
-        </a>
-        <div class="menu">
-            <div class="btn">
-                <i class="fas fa-times close-btn"></i>
-            </div>
-            <a href="{% url 'landing' %}">HOME</a>
-            <a href="{% url 'about' %}">ABOUT</a>
-            <a href="{% url 'services' %}">SERVICES</a>
-            <a href="{% url 'reviews' %}">REVIEWS</a>
+      <a href="{% url 'landing' %}" class="brand">
+        <h1><b class="accent">TCT </b><b class="black">Parking</b></h1>
+      </a>
+      <div class="menu">
+        <div class="btn">
+          <i class="fas fa-times close-btn"></i>
         </div>
+        <a href="{% url 'landing' %}">HOME</a>
+        <a href="{% url 'about' %}">ABOUT</a>
+        <a href="{% url 'services' %}">SERVICES</a>
+        <a href="{% url 'reviews' %}">REVIEWS</a>
+      </div>
 
-        <button class="btn-2" onclick='window.location.href="{% url "login" %}"'>
-            Go to Login
-        </button>
+      <button class="btn-2" onclick='window.location.href="{% url "login" %}"'>
+        Go to Login
+      </button>
 
       <div class="btn">
         <i class="fas fa-bars menu-btn"></i>

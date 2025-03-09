@@ -72,10 +72,27 @@ def Register(request):
     else:
         form = CreateUserForm()
         if request.method == 'POST':
+            user_email = request.POST.get("email")
+            if User.objects.filter(email=user_email).exists():
+                system_messages = messages.get_messages(request)
+                for message in system_messages:
+                    # This iteration is necessary
+                    pass
+                messages.error(request, "This email is already registered.")
+                return redirect('login')
+            
             form = CreateUserForm(request.POST)
+            verification_code = create_rand_id()
             if form.is_valid():
-                form.save()
-                user = form.cleaned_data.get('username')
+                user = form.save()
+                username = form.cleaned_data.get('username')
+                email = form.cleaned_data.get("email")
+                Profile.objects.create(
+                    user=user,
+                    email=email,
+                    verification_code=verification_code
+                )
+                send_verification_email(email, user, verification_code)
             
                 system_messages = messages.get_messages(request)
                 for message in system_messages:
@@ -83,7 +100,7 @@ def Register(request):
                     pass
 
 
-                messages.success(request, "Account Created For " + user)
+                messages.success(request, "Account Created For " + username)
                 return redirect('login')
             else:
                 system_messages = messages.get_messages(request)
@@ -105,6 +122,12 @@ def Logout(request):
 # Dashboard view
 @login_required(login_url='login')
 def Dashboard(request):
+    user = Profile.objects.get(user=request.user)
+    if user.is_verified:
+        if user.is_first_time:
+            return redirect('user_profile')
+    else:
+        return redirect('need_verification')
     total_spots = ParkingSpot.objects.count()
     reserved_spots = ParkingSpot.objects.filter(is_reserved=True).count()
     occupied_spots = ParkingSpot.objects.filter(is_occupied=True).count()
@@ -418,6 +441,36 @@ def scan_to_occupy(request, pk):
 
 def termsandconditions(request):
     return render(request, 'park/termsandcondition.html')
+
+# Email Verification
+def VerifyEmail(request, verification_code):
+    patient = Profile.objects.get(verification_code=verification_code)
+    patient.is_verified = True
+    patient.save()
+    return render(request, 'park/verified.html')
+
+def send_verification_email(email, user, verification_code):
+    subject = 'Email Verification'
+    message = f'Hi {user.username},\n\nPlease click the link below to verify your email address:\n\nhttps://tctparking.ellequin.com/verify_email/{verification_code}'
+    send_email(subject, message, [email])
+
+def NeedVerification(request):
+    logout(request)
+    return render(request, 'park/need_verification.html')
+
+# Profile
+def UserProfile(request):
+    user_profile = Profile.objects.get(user=request.user)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=user_profile)
+        print(form)
+        if form.is_valid():
+            user_profile = form.save()
+            user_profile.is_first_time = False
+            user_profile.save()
+            return redirect('user_profile')
+    context = {'user_profile': user_profile}
+    return render(request, 'park/profile.html', context)
 
 # PWA
 def AssetLink(request):

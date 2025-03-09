@@ -8,6 +8,28 @@ from django.core.files.storage import FileSystemStorage
 from django.db import models
 import pytz
 
+def create_rand_id():
+        from django.utils.crypto import get_random_string
+        return get_random_string(length=13, 
+            allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    email = models.EmailField(max_length=255, blank=True, null=True)
+    verification_code = models.CharField(max_length=255, blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
+    is_first_time = models.BooleanField(default=True)
+
+
+    class Meta:
+        verbose_name_plural = "Profiles"
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+
 class ParkingSpot(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     spot_number = models.IntegerField()

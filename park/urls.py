@@ -49,4 +49,11 @@ urlpatterns = [
 
     # Dashboard
     path("dashboard/", views.Dashboard, name="dashboard"),
+
+    # Email Verification
+    path("verify_email/<str:verification_code>", views.VerifyEmail, name="verify_email"),
+    path("need_verification/", views.NeedVerification, name="need_verification"),
+
+    # Profile
+    path("user_profile/", views.UserProfile, name="user_profile"),
 ]

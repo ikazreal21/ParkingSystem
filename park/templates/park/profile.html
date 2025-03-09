@@ -1,0 +1,28 @@
+{% extends 'park/base.html' %} 
+{% load static %}
+
+{% block content %} 
+<div class="form signup">
+    <span class="title">Profile</span>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="input-field">
+        <input type="text" placeholder="First Name" name="first_name" value="{{user_profile.first_name}}" required />
+        <i class="uil uil-user"></i>
+      </div>
+      <div class="input-field">
+        <input type="text" placeholder="Last Name" name="last_name" value="{{user_profile.last_name}}" required />
+        <i class="uil uil-user"></i>
+      </div>
+      <div class="input-field">
+        <input type="text" placeholder="Email" name="email" value="{{user_profile.email}}" required />
+        <i class="uil uil-user"></i>
+      </div>
+
+      <div class="input-field button">
+        <input type="submit" value="Update" />
+      </div>
+    </form>
+</div>
+{% endblock %} 
