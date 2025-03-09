@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-j90rw98cf3*s2yg=d=%v^z9v^t^(k8vulhtrrk=+w20m)(m_j^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["divimartpariking.ellequin.com", '127.0.0.1']
+ALLOWED_HOSTS = ["tctparking.ellequin.com", '127.0.0.1']
 
 
 # Application definition
@@ -171,15 +171,15 @@ MINIO_ACCESS_URL = f"{AWS_S3_ENDPOINT_LINK}/{MINIO_BUCKET_NAME}"
 
 
 
-CSRF_TRUSTED_ORIGINS = ['https://divimartpariking.ellequin.com']
-CORS_ORIGIN_WHITELIST = ['https://divimartpariking.ellequin.com']
+CSRF_TRUSTED_ORIGINS = ['https://tctparking.ellequin.com']
+CORS_ORIGIN_WHITELIST = ['https://tctparking.ellequin.com']
 
 PWA_APP_NAME = 'EZPARK-APP'
-PWA_APP_DESCRIPTION = "Divimart Parking Application"
+PWA_APP_DESCRIPTION = "TCT Parking Application"
 PWA_APP_THEME_COLOR = '#FECB21'
 PWA_APP_BACKGROUND_COLOR = '#ffffff'
 PWA_APP_DISPLAY = 'standalone'
-PWA_APP_SCOPE = 'https://divimartpariking.ellequin.com'
+PWA_APP_SCOPE = 'https://tctparking.ellequin.com'
 PWA_APP_ORIENTATION = 'any'
 PWA_APP_START_URL = '/login'
 PWA_APP_STATUS_BAR_COLOR = 'default'
@@ -206,3 +206,15 @@ PWA_APP_LANG = 'en-PH'
 PWA_APP_DISPLAY_OVERRIDE = {
     
 }
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'dict2.1.teamone@gmail.com'
+EMAIL_HOST_PASSWORD = 'artndyuvmmgofmmo'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+
+DEFAULT_FROM_EMAIL = 'noreply<no_reply@domain.com>'
