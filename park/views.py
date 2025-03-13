@@ -249,13 +249,13 @@ def reserve_spot(request):
 
         
         # Save the buffer content as an image response
-        buffer.seek(0)  # Move to the beginning of the buffer
-        response = HttpResponse(buffer.read(), content_type="image/png")
-        response["Content-Disposition"] = f"attachment; filename=reservation_{reservation.spot.name}.png"
-        return response
+        # buffer.seek(0)  # Move to the beginning of the buffer
+        # response = HttpResponse(buffer.read(), content_type="image/png")
+        # response["Content-Disposition"] = f"attachment; filename=reservation_{reservation.spot.name}.png"
+        # return response
 
     # Fetch available spots
-    return render(request, 'park/reserve_spot.html', {'spots': spots})
+    return redirect('reserved')
 
 @login_required(login_url='login')
 def cancel_reservation(request, reservation_id):
