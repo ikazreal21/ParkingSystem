@@ -59,3 +59,38 @@ def send_parking_notification(user_email, user_name, reservation_time, parking_s
         [user_email],     # To
         fail_silently=False
     )
+
+
+def send_parking_end_notification(user_email, user_name, reservation_end_time, parking_spot):
+    # Subject of the email
+    subject = 'Parking Reminder: Your Reservation is Ending Soon'
+    
+    # Message body
+    message = f"""
+    Dear {user_name},
+
+    This is a reminder that your parking reservation is nearing its end.
+
+    **Reservation Details:**
+    - **End Time:** {reservation_end_time}
+    - **Parking Spot:** {parking_spot}
+
+    Please ensure you vacate the parking spot on time to avoid any penalties or inconvenience to other users. If you need an extension, please check availability through our system.
+
+    Thank you for using our parking service!
+
+    Best regards,  
+    TCT Parking System
+    """
+
+    # Sender's email (configured in Django settings)
+    from_email = settings.DEFAULT_FROM_EMAIL
+
+    # Send the email
+    send_mail(
+        subject,          # Subject
+        message,          # Message
+        from_email,       # From
+        [user_email],     # To
+        fail_silently=False
+    )

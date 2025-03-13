@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storages',
     'park',
-    'pwa'
+    'pwa',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -218,3 +219,11 @@ EMAIL_USE_SSL = False
 
 
 DEFAULT_FROM_EMAIL = 'noreply<no_reply@domain.com>'
+
+
+
+CELERY_BROKER_URL = 'redis://192.168.1.228:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True

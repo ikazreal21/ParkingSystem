@@ -309,7 +309,7 @@ def unpark_vehicle(request, parked_id):
 def view_qr(request, reservation_id):
     try:
         # Fetch the reservation with the given ID and ensure it is active
-        reservation = get_object_or_404(Parked, id=reservation_id, is_active=True)
+        reservation = get_object_or_404(Reservation, id=reservation_id, is_active=True)
 
         # Log debug information (optional)
         print(f"Reservation ID: {reservation_id}")
@@ -391,18 +391,21 @@ def scan_to_occupy(request, pk):
     end_time = reservation.end_time.replace(tzinfo=None)
 
     # Get the current server time and remove timezone
-    current_time = localtime(now(), user_timezone)
+    current_time = localtime(now(), user_timezone).replace(tzinfo=None)
 
     # Format times in 12-hour format
     def format_time(dt):
         return dt.strftime('%Y-%m-%d %I:%M:%S')  # 12-hour format with timezone
 
-    print("Start Time:", reservation.get_local_start_time())
-    print("Current Time:", current_time)
-    print("End Time:", reservation.get_local_end_time())
+    print("start_time:", start_time)
+    print("end_time:", end_time)
+    print("current_time:", current_time)
 
-    if reservation.get_local_start_time() <= current_time <= \
-        reservation.get_local_end_time():
+    # print("Start Time:", format_time(reservation.get_local_start_time()))
+    # print("Current Time:", current_time)
+    # print("End Time:", format_time(reservation.get_local_end_time()))
+
+    if start_time <= current_time <= end_time:
         if reservation.spot.is_occupied:
             # If already occupied, unoccupy it
             reservation.spot.is_occupied = False
@@ -475,12 +478,12 @@ def UserProfile(request):
 # PWA
 def AssetLink(request):
     assetlink = [
-        {
+            {
             "relation": ["delegate_permission/common.handle_all_urls"],
             "target": {
-            "namespace": "android_app",
-            "package_name": "xyz.appmaker.bzgupr",
-            "sha256_cert_fingerprints": ["CB:CF:36:39:7F:11:7D:F4:EA:46:C9:CE:8F:A1:FF:D0:BA:D8:F8:BB:ED:BC:A7:2F:33:58:32:A8:AA:D3:D0:63"]
+                "namespace": "android_app",
+                "package_name": "com.ellequin.tctparking.twa",
+                "sha256_cert_fingerprints": ["DC:AB:C1:F1:A9:06:70:47:95:C3:EC:05:75:EA:C7:4C:BE:DA:51:0A:EC:08:64:36:FB:79:91:AA:6D:9E:0F:4C"]
             }
         }
     ]

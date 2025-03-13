@@ -13,6 +13,7 @@ admin.site.unregister(Group)
 admin.site.register(ParkingSpot)
 admin.site.register(Reservation)
 admin.site.register(Parked)
+admin.site.register(Profile)
 
 
 
