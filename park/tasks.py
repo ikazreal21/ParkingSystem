@@ -17,13 +17,15 @@ def send_start_reservation_reminders():
         status="pending"
     )
 
+    reservation_len = len(reservations)
+
     for reservation in reservations:
         send_parking_notification(
             reservation.user.email, 
             reservation.user.username,
             reservation.start_time.replace(tzinfo=None),
             reservation.spot.name)
-    return "Reservation start reminders sent"
+    return f"Reservation start reminders sent with the reservation length {reservation_len}"
 
 @shared_task
 def send_end_reservation_reminders():
@@ -35,6 +37,8 @@ def send_end_reservation_reminders():
             status="pending"
     )
 
+    reservation_len = len(end_reminders)
+
     for reservation in end_reminders:
         send_parking_end_notification(
             reservation.user.email, 
@@ -42,4 +46,4 @@ def send_end_reservation_reminders():
             reservation.end_time.replace(tzinfo=None),
             reservation.spot.name
         )
-    return "Reservation end reminders sent"
+    return f"Reservation end reminders sent with the reservation length {reservation_len}"
