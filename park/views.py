@@ -463,7 +463,7 @@ def scan_to_occupy(request, pk):
             spot.reservation_end_time = None
             spot.save()
 
-            return redirect('parked_vehicles')
+            return redirect('exceed_time')
 
         else:
             return redirect('not_in_schedule')
