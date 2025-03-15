@@ -428,7 +428,7 @@ def scan_to_occupy(request, pk):
             reservation.spot.is_reserved = False
             reservation.status = "parked"
 
-            parked_user = request.user if request.user and not isinstance(request.user, AnonymousUser) else reservation.user
+            parked_user = reservation.user
 
             Parked.objects.create(
                 user=parked_user,
