@@ -420,9 +420,10 @@ def scan_to_occupy(request, pk):
             parked_user = reservation.user
             parked_user_exist = Parked.objects.filter(user=parked_user, spot=spot, end_time=None, is_active=True).first()
 
-            parked_user_exist.end_time = current_time
-            parked_user_exist.is_active = False
-            parked_user_exist.save()
+            if parked_user_exist:
+                parked_user_exist.end_time = current_time
+                parked_user_exist.is_active = False
+                parked_user_exist.save()
 
             spot.reservation_end_time = None
             spot.save()
@@ -456,9 +457,10 @@ def scan_to_occupy(request, pk):
             parked_user = reservation.user
             parked_user_exist = Parked.objects.filter(user=parked_user, spot=spot, end_time=None, is_active=True).first()
 
-            parked_user_exist.end_time = current_time
-            parked_user_exist.is_active = False
-            parked_user_exist.save()
+            if parked_user_exist:
+                parked_user_exist.end_time = current_time
+                parked_user_exist.is_active = False
+                parked_user_exist.save()
 
             spot.reservation_end_time = None
             spot.save()
