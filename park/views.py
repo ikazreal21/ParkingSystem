@@ -440,9 +440,9 @@ def scan_to_occupy(request, pk):
         reservation.spot.save()
         reservation.save()
     else:
-        return JsonResponse({'error': 'Invalid reservation: not within the reserved time'}, status=400)
+        return redirect('not_in_schedule')
 
-    return redirect('/')
+    return redirect('you_are_now_parked')
 
 
 def termsandconditions(request):
@@ -477,6 +477,14 @@ def UserProfile(request):
             return redirect('user_profile')
     context = {'user_profile': user_profile}
     return render(request, 'park/profile.html', context)
+
+
+# Additional Links
+def you_are_now_parked(request):
+    return render(request, 'park/you_are_now_parked.html')
+
+def not_in_schedule(request):
+    return render(request, 'park/not_schedule.html')
 
 # PWA
 def AssetLink(request):
