@@ -39,12 +39,20 @@ class ParkingSpot(models.Model):
     is_handicapped = models.BooleanField(default=False)
     is_charging = models.BooleanField(default=False)
     is_vip = models.BooleanField(default=False)
+    reservation_end_time = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {str(self.spot_number)}"
     
     def get_spot_number(self):
         return self.spot_number
+    
+    def time_remaining(self):
+        """Calculate remaining time in seconds"""
+        if self.is_occupied and self.reservation_end_time:
+            remaining_time = (self.reservation_end_time - now()).total_seconds()
+            return max(0, int(remaining_time))  # Avoid negative values
+        return 0
 
     class Meta:
         verbose_name_plural = "Parking Spot"

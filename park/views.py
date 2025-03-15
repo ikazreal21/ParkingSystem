@@ -146,6 +146,8 @@ def Dashboard(request):
 def parking_spots(request):
     spots = ParkingSpot.objects.all()
     # print(request.get_host())
+    for spot in spots:
+        spot.remaining_time = spot.time_remaining()
 
     return render(request, 'park/parking_spots.html', {'spots': spots})
 
@@ -421,6 +423,9 @@ def scan_to_occupy(request, pk):
             parked_user_exist.end_time = current_time
             parked_user_exist.is_active = False
             parked_user_exist.save()
+
+            spot.reservation_end_time = None
+            spot.save()
             
         else:
             # Otherwise, mark it as occupied
@@ -429,6 +434,9 @@ def scan_to_occupy(request, pk):
             reservation.status = "parked"
 
             parked_user = reservation.user
+
+            spot.reservation_end_time = reservation.end_time
+            spot.save()
 
             Parked.objects.create(
                 user=parked_user,
