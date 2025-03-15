@@ -93,6 +93,7 @@ class Reservation(models.Model):
         
     class Meta:
         verbose_name_plural = "Reservations"
+        ordering = ['start_time']
 
     
 class Parked(models.Model):

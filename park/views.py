@@ -415,7 +415,7 @@ def scan_to_occupy(request, pk):
             reservation.spot.is_reserved = False
             reservation.status = "complete"
 
-            parked_user = request.user if request.user and not isinstance(request.user, AnonymousUser) else reservation.user
+            parked_user = reservation.user
             parked_user_exist = Parked.objects.filter(user=parked_user, spot=spot, end_time=None, is_active=True).first()
 
             parked_user_exist.end_time = current_time
@@ -442,7 +442,7 @@ def scan_to_occupy(request, pk):
     else:
         return JsonResponse({'error': 'Invalid reservation: not within the reserved time'}, status=400)
 
-    return redirect('dashboard')
+    return redirect('/')
 
 
 def termsandconditions(request):
