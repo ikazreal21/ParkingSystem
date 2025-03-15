@@ -27,6 +27,8 @@ def contact_us(message, sender):
 
 
 def send_parking_notification(user_email, user_name, reservation_time, parking_spot):
+    reservation_time = reservation_time.strftime('%B %d, %Y at %I:%M %p')
+
     # Subject of the email
     subject = 'Parking Reminder: Your Reservation Time is Approaching'
     
@@ -62,6 +64,7 @@ def send_parking_notification(user_email, user_name, reservation_time, parking_s
 
 
 def send_parking_end_notification(user_email, user_name, reservation_end_time, parking_spot):
+    reservation_end_time = reservation_end_time.strftime('%B %d, %Y at %I:%M %p')
     # Subject of the email
     subject = 'Parking Reminder: Your Reservation is Ending Soon'
     
