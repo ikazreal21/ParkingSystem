@@ -448,7 +448,25 @@ def scan_to_occupy(request, pk):
         reservation.spot.save()
         reservation.save()
     else:
-        return redirect('not_in_schedule')
+        if reservation.spot.is_occupied:
+            reservation.spot.is_occupied = False
+            reservation.spot.is_reserved = False
+            reservation.status = "complete"
+
+            parked_user = reservation.user
+            parked_user_exist = Parked.objects.filter(user=parked_user, spot=spot, end_time=None, is_active=True).first()
+
+            parked_user_exist.end_time = current_time
+            parked_user_exist.is_active = False
+            parked_user_exist.save()
+
+            spot.reservation_end_time = None
+            spot.save()
+
+            return redirect('parked_vehicles')
+
+        else:
+            return redirect('not_in_schedule')
 
     return redirect('you_are_now_parked')
 
@@ -493,6 +511,9 @@ def you_are_now_parked(request):
 
 def not_in_schedule(request):
     return render(request, 'park/not_schedule.html')
+
+def exceed_time(request):
+    return render(request, 'park/exceed_time.html')
 
 # PWA
 def AssetLink(request):
