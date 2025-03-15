@@ -199,6 +199,8 @@ def delete_parking_spot(request, spot_id):
 @login_required(login_url='login')
 def reservations(request):
     reservations = Reservation.objects.filter(user=request.user)
+    for i in reservations:
+        print(i.user.email)
     return render(request, 'park/reservations.html', {'reservations': reservations})
 
 @login_required(login_url='login')
@@ -387,8 +389,8 @@ def scan_to_occupy(request, pk):
     # Convert all times to the same timezone (e.g., system's local timezone)
     user_timezone = pytz.timezone('Asia/Manila')  # Change this to your desired timezone
     
-    start_time = reservation.start_time.replace(tzinfo=None)
-    end_time = reservation.end_time.replace(tzinfo=None)
+    # start_time = reservation.start_time.replace(tzinfo=None)
+    # end_time = reservation.end_time.replace(tzinfo=None)
 
     # Get the current server time and remove timezone
     current_time = localtime(now(), user_timezone).replace(tzinfo=None)
@@ -397,15 +399,16 @@ def scan_to_occupy(request, pk):
     def format_time(dt):
         return dt.strftime('%Y-%m-%d %I:%M:%S')  # 12-hour format with timezone
 
-    print("start_time:", start_time)
-    print("end_time:", end_time)
-    print("current_time:", current_time)
+    # print("start_time:", start_time)
+    # print("end_time:", end_time)
+    # print("current_time:", current_time)
 
-    # print("Start Time:", format_time(reservation.get_local_start_time()))
-    # print("Current Time:", current_time)
+    print("Start Time:", reservation.get_local_start_time().replace(tzinfo=None))
+    print("Current Time:", current_time)
     # print("End Time:", format_time(reservation.get_local_end_time()))
 
-    if start_time <= current_time <= end_time:
+    if reservation.get_local_start_time().replace(tzinfo=None) <= current_time <= \
+        reservation.get_local_end_time().replace(tzinfo=None):
         if reservation.spot.is_occupied:
             # If already occupied, unoccupy it
             reservation.spot.is_occupied = False

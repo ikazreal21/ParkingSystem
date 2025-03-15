@@ -5,21 +5,21 @@
 
 {% if messages %}
     {% for message in messages %}
-    {% if message.tags == 'error' %}
-        <div class="alert alert-danger alert-left-bordered border-danger alert-dismissible d-flex align-items-center p-md-4 mb-2 fade show" 		role="alert">
-            <i class="gd-flag-alt-2 icon-text text-warning mr-2"></i>
-            <p class="mb-0">
-                <strong>{{ message }}</strong> 
-            </p>
-        </div>
-    {% else %}
-        <div class="alert alert-success alert-left-bordered border-warning alert-dismissible d-flex align-items-center p-md-4 mb-2 fade show" 		role="alert">
-            <i class="gd-flag-alt-2 icon-text text-warning mr-2"></i>
-            <p class="mb-0">
-                <strong>{{ message }}</strong> 
-            </p>
-        </div>
-    {% endif %}
+        {% if message.tags == 'error' %}
+            <div class="alert alert-danger alert-left-bordered border-danger alert-dismissible d-flex align-items-center p-md-4 mb-2 fade show" 		role="alert">
+                <i class="gd-flag-alt-2 icon-text text-warning mr-2"></i>
+                <p class="mb-0">
+                    <strong>{{ message }}</strong> 
+                </p>
+            </div>
+        {% else %}
+            <div class="alert alert-success alert-left-bordered border-warning alert-dismissible d-flex align-items-center p-md-4 mb-2 fade show" 		role="alert">
+                <i class="gd-flag-alt-2 icon-text text-warning mr-2"></i>
+                <p class="mb-0">
+                    <strong>{{ message }}</strong> 
+                </p>
+            </div>
+        {% endif %}
     {% endfor %}
 {% endif %}
 <h1>Parking Spots</h1>
