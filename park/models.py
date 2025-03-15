@@ -112,6 +112,7 @@ class Parked(models.Model):
     end_time = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     qr = models.ImageField(upload_to='qr_codes', blank=True)
+    exceeded_hours = models.FloatField(default=0.0)
 
     def __str__(self):
         return str(self.user) + " " + str(self.spot) + " " + str(self.start_time) + " " + str(self.end_time)

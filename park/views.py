@@ -460,13 +460,25 @@ def scan_to_occupy(request, pk):
             if parked_user_exist:
                 parked_user_exist.end_time = current_time
                 parked_user_exist.is_active = False
+
+                # Calculate exceeded hours
+                exceeded_time = current_time - reservation.get_local_end_time()
+                exceeded_hours = exceeded_time.total_seconds() / 3600  # Convert seconds to hours
+
+                # Save the exceeded hours (assuming you have a field for it)
+                parked_user_exist.exceeded_hours = exceeded_hours  
                 parked_user_exist.save()
 
             spot.reservation_end_time = None
             spot.save()
 
-            return redirect('exceed_time')
-
+            reservation.spot.save()
+            reservation.save()
+            
+            context = {
+                'exceeded_hours': exceeded_hours
+            }
+            return render(request, 'park/exceed_time.html', context)
         else:
             return redirect('not_in_schedule')
 
