@@ -148,6 +148,7 @@ def parking_spots(request):
     # print(request.get_host())
     for spot in spots:
         spot.remaining_time = spot.time_remaining()
+        print(spot.remaining_time)
 
     return render(request, 'park/parking_spots.html', {'spots': spots})
 
@@ -462,12 +463,14 @@ def scan_to_occupy(request, pk):
                 parked_user_exist.is_active = False
 
                 # Calculate exceeded hours
-                exceeded_time = current_time - reservation.get_local_end_time()
+                exceeded_time = current_time - reservation.get_local_end_time().replace(tzinfo=None)
                 exceeded_hours = exceeded_time.total_seconds() / 3600  # Convert seconds to hours
 
                 # Save the exceeded hours (assuming you have a field for it)
                 parked_user_exist.exceeded_hours = exceeded_hours  
                 parked_user_exist.save()
+
+                exceeded_hours = max(0, int(exceeded_hours))  # Avoid negative values
 
             spot.reservation_end_time = None
             spot.save()
