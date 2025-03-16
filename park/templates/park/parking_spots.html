@@ -32,8 +32,6 @@
                 <p class="card-text">
                     {% if spot.is_occupied %}
                         <span class="text-danger">Occupied</span>
-                        <br>
-                        <small>Time Left: <span class="countdown" data-time="{{ spot.time_remaining }}"></span></small>
                     {% else %}
                         <span class="text-success">Available</span>
                     {% endif %}
@@ -103,36 +101,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        function startCountdown() {
-            const countdownElements = document.querySelectorAll('.countdown');
-    
-            countdownElements.forEach(function (element) {
-                let remainingTime = parseInt(element.getAttribute('data-time'));
-    
-                function updateTimer() {
-                    if (remainingTime > 0) {
-                        let hours = Math.floor(remainingTime / 3600);
-                        let minutes = Math.floor((remainingTime % 3600) / 60);
-                        let seconds = remainingTime % 60;
-    
-                        element.textContent = `${hours}h ${minutes}m ${seconds}s`;
-    
-                        remainingTime -= 1;
-                        setTimeout(updateTimer, 1000);
-                    } else {
-                        element.textContent = "Available soon! the Current user has exceeded the time reservation";
-                    }
-                }
-    
-                updateTimer();
-            });
-        }
-    
-        startCountdown();
-    });
-    </script>
     
 {% endblock %}
 
