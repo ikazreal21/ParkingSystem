@@ -42,6 +42,7 @@ urlpatterns = [
     path("parked", views.you_are_now_parked, name="you_are_now_parked"),
     path("not_parked", views.not_in_schedule, name="not_in_schedule"),
     path("exceed_time", views.exceed_time, name="exceed_time"),
+    path("done_parking", views.done_parking, name="done_parking"),
 
     # Terms and Conditions
     path("terms/", views.termsandconditions, name="terms"),

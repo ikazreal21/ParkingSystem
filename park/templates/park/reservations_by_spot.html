@@ -1,6 +1,7 @@
 {% extends 'park/base.html' %}
 {% block content %}
 <div class="card">
+    <h4>Time Remaining: <span style="color: red;" id="countdown"></span></h4>
     <h5 class="card-header">Reservation History for Spot {{ spot.spot_number }}</h5>
     <div class="table-responsive text-nowrap">
         <table class="table">
@@ -29,4 +30,27 @@
         </table>
     </div>
 </div>
+<script>
+    function startCountdown(seconds) {
+        const countdownElement = document.getElementById("countdown");
+
+        function updateCountdown() {
+            if (seconds > 0) {
+                let hours = Math.floor(seconds / 3600);
+                let minutes = Math.floor((seconds % 3600) / 60);
+                let secondsLeft = Math.floor(seconds % 60);
+
+                countdownElement.textContent = `${hours}h ${minutes}m ${secondsLeft}s`;
+                seconds--;
+                setTimeout(updateCountdown, 1000);
+            } else {
+                countdownElement.textContent = "Time Expired!";
+            }
+        }
+
+        updateCountdown();
+    }
+
+    startCountdown({{ remaining_seconds }});  // Pass remaining seconds from Django
+</script>
 {% endblock %}

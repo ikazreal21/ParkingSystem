@@ -38,6 +38,21 @@ from django.contrib.auth.models import AnonymousUser
 
 import pytz
 
+
+def get_remaining_time(reservation):
+    print(reservation.get_local_end_time().replace(tzinfo=None))
+    """Returns the remaining time in seconds until the parking reservation ends."""
+    user_timezone = pytz.timezone('Asia/Manila')  # Adjust to your timezone
+    current_time = localtime(now(), user_timezone).replace(tzinfo=None)
+
+    print(current_time)
+
+    print(reservation.get_local_end_time().replace(tzinfo=None) > current_time)
+    if reservation.reservation_end_time and reservation.get_local_end_time().replace(tzinfo=None) > current_time:
+        remaining_time = reservation.get_local_end_time().replace(tzinfo=None) - current_time
+        return remaining_time.total_seconds()  # Return seconds remaining
+    return 0
+
 # @login_required(login_url='login')
 def LandingPage(request):
     return render(request, 'park/landing.html')
@@ -146,15 +161,12 @@ def Dashboard(request):
 def parking_spots(request):
     spots = ParkingSpot.objects.all()
     # print(request.get_host())
-    for spot in spots:
-        spot.remaining_time = spot.time_remaining()
-        print(spot.remaining_time)
-
-    return render(request, 'park/parking_spots.html', {'spots': spots})
+    return render(request, 'park/parking_spots.html')
 
 @login_required(login_url='login')
 def parking_spot_detail(request, spot_id):
     spot = get_object_or_404(ParkingSpot, id=spot_id)
+    
     return render(request, 'park/parking_spot_detail.html', {'spot': spot})
 
 # Create, update, delete parking spots
@@ -380,7 +392,12 @@ def reservations_by_date(request, selected_date):
 def reservations_by_spot(request, pk):
     spot_obj = ParkingSpot.objects.get(id=pk)
     reservations = Reservation.objects.filter(spot=spot_obj)
-    context = {'reservations': reservations, 'spot': spot_obj}
+
+    remaining_seconds = get_remaining_time(spot_obj)
+
+    print(remaining_seconds)
+
+    context = {'reservations': reservations, 'spot': spot_obj,  'remaining_seconds': remaining_seconds}
     return render(request, 'park/reservations_by_spot.html', context)
 
 def scan_to_occupy(request, pk):
@@ -410,6 +427,9 @@ def scan_to_occupy(request, pk):
     print("Current Time:", current_time)
     # print("End Time:", format_time(reservation.get_local_end_time()))
 
+    print(reservation.spot.is_occupied)
+    print(reservation.spot.is_reserved)
+
     if reservation.get_local_start_time().replace(tzinfo=None) <= current_time <= \
         reservation.get_local_end_time().replace(tzinfo=None):
         if reservation.spot.is_occupied:
@@ -429,6 +449,10 @@ def scan_to_occupy(request, pk):
             spot.reservation_end_time = None
             spot.save()
             
+            reservation.spot.save()
+            reservation.save()
+
+            return redirect('done_parking')
         else:
             # Otherwise, mark it as occupied
             reservation.spot.is_occupied = True
@@ -437,8 +461,8 @@ def scan_to_occupy(request, pk):
 
             parked_user = reservation.user
 
-            spot.reservation_end_time = reservation.end_time
-            spot.save()
+            reservation.spot.reservation_end_time = reservation.get_local_start_time().replace(tzinfo=None)
+            print("Reservation End Time:",  reservation.spot.reservation_end_time)
 
             Parked.objects.create(
                 user=parked_user,
@@ -447,8 +471,10 @@ def scan_to_occupy(request, pk):
                 end_time=None
             )
 
-        reservation.spot.save()
-        reservation.save()
+            reservation.spot.save()
+            reservation.save()
+            
+            return redirect('you_are_now_parked')
     else:
         if reservation.spot.is_occupied:
             reservation.spot.is_occupied = False
@@ -484,8 +510,6 @@ def scan_to_occupy(request, pk):
             return render(request, 'park/exceed_time.html', context)
         else:
             return redirect('not_in_schedule')
-
-    return redirect('you_are_now_parked')
 
 
 def termsandconditions(request):
@@ -531,6 +555,9 @@ def not_in_schedule(request):
 
 def exceed_time(request):
     return render(request, 'park/exceed_time.html')
+
+def done_parking(request):
+    return render(request, 'park/done_parking.html')
 
 # PWA
 def AssetLink(request):

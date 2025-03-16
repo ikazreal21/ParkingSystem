@@ -47,12 +47,10 @@ class ParkingSpot(models.Model):
     def get_spot_number(self):
         return self.spot_number
     
-    def time_remaining(self):
-        """Calculate remaining time in seconds"""
-        if self.is_occupied and self.reservation_end_time:
-            remaining_time = (self.reservation_end_time - now()).total_seconds()
-            return max(0, int(remaining_time))  # Avoid negative values
-        return 0
+    def get_local_end_time(self):
+        """ Get start_time in Asia/Manila timezone without saving """
+        manila_tz = pytz.timezone('Asia/Manila')
+        return self.reservation_end_time.astimezone(manila_tz) if self.reservation_end_time else None
 
     class Meta:
         verbose_name_plural = "Parking Spot"
@@ -101,7 +99,7 @@ class Reservation(models.Model):
         
     class Meta:
         verbose_name_plural = "Reservations"
-        ordering = ['start_time']
+        ordering = ['-start_time']
 
     
 class Parked(models.Model):
