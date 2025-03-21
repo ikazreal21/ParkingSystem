@@ -161,7 +161,7 @@ def Dashboard(request):
 def parking_spots(request):
     spots = ParkingSpot.objects.all()
     # print(request.get_host())
-    return render(request, 'park/parking_spots.html')
+    return render(request, 'park/parking_spots.html', {'spots': spots})
 
 @login_required(login_url='login')
 def parking_spot_detail(request, spot_id):
@@ -401,7 +401,7 @@ def reservations_by_spot(request, pk):
     return render(request, 'park/reservations_by_spot.html', context)
 
 def scan_to_occupy(request, pk):
-    reservation = get_object_or_404(Reservation, id=pk)
+    reservation = get_object_or_404(Reservation, id=pk, status__in=["parked", "pending"])
     spot = get_object_or_404(ParkingSpot, id=reservation.spot.id)
 
 
