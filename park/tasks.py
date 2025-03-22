@@ -1,21 +1,27 @@
 from celery import shared_task
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 from datetime import timedelta
 from django.conf import settings
 from park.models import Reservation
 from .utils import *
-
+import pytz
 
 
 @shared_task
 def send_start_reservation_reminders():
-    current_time = now()
+    return_json = {}
+
+    user_timezone = pytz.timezone('Asia/Manila')
+    current_time = localtime(now(), user_timezone).replace(tzinfo=None)
 
     reservations = Reservation.objects.filter(
         start_time__gte=current_time + timedelta(hours=1),
         start_time__lt=current_time + timedelta(hours=1, minutes=5),
         status="pending"
     )
+    print("reservations", reservations)
+    print("current_time + timedelta(hours=1)", current_time + timedelta(hours=1))
+    print("current_time + timedelta(hours=1, minutes=5)", current_time + timedelta(hours=1, minutes=5))
 
     reservation_len = len(reservations)
 
@@ -23,18 +29,26 @@ def send_start_reservation_reminders():
         send_parking_notification(
             reservation.user.email, 
             reservation.user.username,
-            reservation.start_time.replace(tzinfo=None),
+            reservation.get_local_start_time().replace(tzinfo=None),
             reservation.spot.name)
-    return f"Reservation start reminders sent with the reservation length {reservation_len}"
+
+    return_json["reservation_len"] = reservation_len
+    return_json["current_time_timedelta1hr"] = current_time + timedelta(hours=1)
+    return_json["current_time_timedelta1hr5min"] = current_time + timedelta(hours=1, minutes=5)
+    
+    return return_json
 
 @shared_task
 def send_end_reservation_reminders():
-    current_time = now()
+    return_json = {}
+
+    user_timezone = pytz.timezone('Asia/Manila')
+    current_time = localtime(now(), user_timezone).replace(tzinfo=None)
 
     end_reminders = Reservation.objects.filter(
             end_time__gte=current_time + timedelta(hours=1),
             end_time__lt=current_time + timedelta(hours=1, minutes=5),
-            status="pending"
+            status="parked"
     )
 
     reservation_len = len(end_reminders)
@@ -43,7 +57,12 @@ def send_end_reservation_reminders():
         send_parking_end_notification(
             reservation.user.email, 
             reservation.user.username,
-            reservation.end_time.replace(tzinfo=None),
+            reservation.get_local_end_time().replace(tzinfo=None),
             reservation.spot.name
         )
-    return f"Reservation end reminders sent with the reservation length {reservation_len}"
+
+    return_json["reservation_len"] = reservation_len
+    return_json["current_time_timedelta1hr"] = current_time + timedelta(hours=1)
+    return_json["current_time_timedelta1hr5min"] = current_time + timedelta(hours=1, minutes=5)
+    
+    return return_json

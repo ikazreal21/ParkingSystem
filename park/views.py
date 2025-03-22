@@ -40,18 +40,78 @@ import pytz
 
 
 def get_remaining_time(reservation):
-    print(reservation.get_local_end_time().replace(tzinfo=None))
     """Returns the remaining time in seconds until the parking reservation ends."""
     user_timezone = pytz.timezone('Asia/Manila')  # Adjust to your timezone
     current_time = localtime(now(), user_timezone).replace(tzinfo=None)
 
     print(current_time)
 
-    print(reservation.get_local_end_time().replace(tzinfo=None) > current_time)
-    if reservation.reservation_end_time and reservation.get_local_end_time().replace(tzinfo=None) > current_time:
-        remaining_time = reservation.get_local_end_time().replace(tzinfo=None) - current_time
-        return remaining_time.total_seconds()  # Return seconds remaining
+    if reservation.reservation_end_time:
+        print(reservation.get_local_end_time().replace(tzinfo=None))
+        print(reservation.get_local_end_time().replace(tzinfo=None) > current_time)
+        if reservation.get_local_end_time().replace(tzinfo=None) > current_time:
+            remaining_time = reservation.get_local_end_time().replace(tzinfo=None) - current_time
+            return remaining_time.total_seconds()  # Return seconds remaining
     return 0
+
+# def send_start_reservation_reminders():
+#     return_json = []
+
+#     user_timezone = pytz.timezone('Asia/Manila')
+#     current_time = localtime(now(), user_timezone).replace(tzinfo=None)
+
+#     reservations = Reservation.objects.filter(
+#         start_time__gte=current_time + timedelta(hours=1),
+#         start_time__lt=current_time + timedelta(hours=1, minutes=5),
+#         status="pending"
+#     )
+#     print("reservations", reservations)
+#     print("current_time + timedelta(hours=1)", current_time + timedelta(hours=1))
+#     print("current_time + timedelta(hours=1, minutes=5)", current_time + timedelta(hours=1, minutes=5))
+
+#     reservation_len = len(reservations)
+
+#     for reservation in reservations:
+#         send_parking_notification(
+#             reservation.user.email, 
+#             reservation.user.username,
+#             reservation.start_time.replace(tzinfo=None),
+#             reservation.spot.name)
+
+#     return_json["reservation_len"] = reservation_len
+#     return_json["current_time_timedelta1hr"] = current_time + timedelta(hours=1)
+#     return_json["current_time_timedelta1hr5min"] = current_time + timedelta(hours=1, minutes=5)
+    
+#     return return_json
+
+# def send_end_reservation_reminders():
+
+#     return_json = []
+
+#     user_timezone = pytz.timezone('Asia/Manila')
+#     current_time = localtime(now(), user_timezone).replace(tzinfo=None)
+
+#     end_reminders = Reservation.objects.filter(
+#             end_time__gte=current_time + timedelta(hours=1),
+#             end_time__lt=current_time + timedelta(hours=1, minutes=5),
+#             status="parked"
+#     )
+
+#     reservation_len = len(end_reminders)
+
+#     for reservation in end_reminders:
+#         send_parking_end_notification(
+#             reservation.user.email, 
+#             reservation.user.username,
+#             reservation.end_time.replace(tzinfo=None),
+#             reservation.spot.name
+#         )
+
+#     return_json["reservation_len"] = reservation_len
+#     return_json["current_time_timedelta1hr"] = current_time + timedelta(hours=1)
+#     return_json["current_time_timedelta1hr5min"] = current_time + timedelta(hours=1, minutes=5)
+    
+#     return return_json
 
 # @login_required(login_url='login')
 def LandingPage(request):
@@ -148,6 +208,8 @@ def Dashboard(request):
     occupied_spots = ParkingSpot.objects.filter(is_occupied=True).count()
     available_spots = total_spots - reserved_spots - occupied_spots
 
+    # send_start_reservation_reminders()
+    # send_end_reservation_reminders()
     context = {
         'total_spots': total_spots,
         'reserved_spots': reserved_spots,
@@ -213,7 +275,7 @@ def delete_parking_spot(request, spot_id):
 # Reservation views
 @login_required(login_url='login')
 def reservations(request):
-    reservations = Reservation.objects.filter(user=request.user)
+    reservations = Reservation.objects.filter(user=request.user, status__in=["complete", "expired"])
     for i in reservations:
         print(i.user.email)
     return render(request, 'park/reservations.html', {'reservations': reservations})
@@ -272,7 +334,7 @@ def reserve_spot(request):
         # return response
 
     # Fetch available spots
-    return redirect('reserved')
+    return redirect('current')
 
 @login_required(login_url='login')
 def cancel_reservation(request, reservation_id):
@@ -285,7 +347,7 @@ def cancel_reservation(request, reservation_id):
 # Parked vehicle views
 @login_required(login_url='login')
 def parked_vehicles(request):
-    parked = Reservation.objects.filter(user=request.user, status="pending")
+    parked = Reservation.objects.filter(user=request.user, status__in=["parked", "pending"])
     return render(request, 'park/parked_vehicles.html', {'parked': parked})
 
 @login_required(login_url='login')
@@ -402,7 +464,9 @@ def reservations_by_spot(request, pk):
 
 def scan_to_occupy(request, pk):
     reservation = get_object_or_404(Reservation, id=pk, status__in=["parked", "pending"])
+    print(reservation)
     spot = get_object_or_404(ParkingSpot, id=reservation.spot.id)
+    print(spot)
 
 
     
@@ -446,9 +510,7 @@ def scan_to_occupy(request, pk):
                 parked_user_exist.is_active = False
                 parked_user_exist.save()
 
-            spot.reservation_end_time = None
-            spot.save()
-            
+            reservation.spot.reservation_end_time = None
             reservation.spot.save()
             reservation.save()
 
@@ -461,7 +523,7 @@ def scan_to_occupy(request, pk):
 
             parked_user = reservation.user
 
-            reservation.spot.reservation_end_time = reservation.get_local_start_time().replace(tzinfo=None)
+            reservation.spot.reservation_end_time = reservation.get_local_end_time().replace(tzinfo=None)
             print("Reservation End Time:",  reservation.spot.reservation_end_time)
 
             Parked.objects.create(
@@ -492,15 +554,13 @@ def scan_to_occupy(request, pk):
                 exceeded_time = current_time - reservation.get_local_end_time().replace(tzinfo=None)
                 exceeded_hours = exceeded_time.total_seconds() / 3600  # Convert seconds to hours
 
+                exceeded_hours = max(0, int(exceeded_hours))  # Avoid negative values
                 # Save the exceeded hours (assuming you have a field for it)
                 parked_user_exist.exceeded_hours = exceeded_hours  
                 parked_user_exist.save()
 
-                exceeded_hours = max(0, int(exceeded_hours))  # Avoid negative values
 
-            spot.reservation_end_time = None
-            spot.save()
-
+            reservation.spot.reservation_end_time = None
             reservation.spot.save()
             reservation.save()
             

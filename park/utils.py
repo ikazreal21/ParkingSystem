@@ -42,7 +42,9 @@ def send_parking_notification(user_email, user_name, reservation_time, parking_s
     - **Time:** {reservation_time}
     - **Parking Spot:** {parking_spot}
 
-    Please ensure you arrive on time to avoid any inconvenience. If you need to modify your reservation, you can do so through our system.
+    Please ensure you arrive on time to avoid any inconvenience. 
+
+    **Note:** Once a reservation is made, it **cannot be modified**.
 
     Safe travels, and thank you for choosing our parking service!
 
@@ -78,7 +80,7 @@ def send_parking_end_notification(user_email, user_name, reservation_end_time, p
     - **End Time:** {reservation_end_time}
     - **Parking Spot:** {parking_spot}
 
-    Please ensure you vacate the parking spot on time to avoid any penalties or inconvenience to other users. If you need an extension, please check availability through our system.
+    Please ensure you vacate the parking spot on time to avoid any penalties or inconvenience to other users.
 
     Thank you for using our parking service!
 
