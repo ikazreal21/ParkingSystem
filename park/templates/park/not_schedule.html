@@ -16,7 +16,7 @@
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
     />
 
-    <title>Dashboard Park</title>
+    <title>Not in Schedule</title>
 
     <meta name="description" content="" />
 
@@ -86,7 +86,18 @@
             <!-- Content -->
 
             <div class="container-xxl flex-grow-1 container-p-y">
-                <h1 style="text-align: center;">Not in Your Schedule</h1>
+                <h1 style="text-align: center; color: #ff3e1d;">Not in Your Schedule</h1>
+                <div style="text-align: center; margin-top: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                  <div class="alert alert-warning" role="alert" style="text-align: left;">
+                    <h4 class="alert-heading">Parking Not Scheduled</h4>
+                    <p>You're attempting to park outside of your scheduled parking time.</p>
+                    <hr>
+                    <p class="mb-0">Please check your parking schedule or contact administration if you believe this is an error.</p>
+                  </div>
+                  <div style="margin-top: 2rem;">
+                    <a href="{% url 'login' %}" class="btn btn-primary me-2">Login</a>
+                  </div>
+                </div>
             </div>
 
             <div class="content-backdrop fade"></div>
@@ -100,15 +111,6 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
-
-    <!-- <div class="buy-now">
-      <a
-        href="https://themeselection.com/products/sneat-bootstrap-html-admin-template/"
-        target="_blank"
-        class="btn btn-danger btn-buy-now"
-        >Upgrade to Pro</a
-      >
-    </div> -->
 
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
@@ -128,8 +130,5 @@
 
     <!-- Page JS -->
     <script src="{% static 'assets/js/dashboards-analytics.js' %}"></script>
-
-    <!-- Place this tag in your head or just before your close body tag. -->
-    <!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
   </body>
 </html>
