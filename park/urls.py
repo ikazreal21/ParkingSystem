@@ -62,4 +62,8 @@ urlpatterns = [
 
     # Profile
     path("user_profile/", views.UserProfile, name="user_profile"),
+
+    # Logistics and Summary
+    path('logistics/', views.logistics_view, name='logistics'),
+    path('summary/', views.summary_view, name='summary'),
 ]

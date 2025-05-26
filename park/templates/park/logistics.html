@@ -1,0 +1,67 @@
+{% extends 'park/base.html' %} {% load static %} {% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Today's Logistics</h2>
+
+  <div class="row">
+    <div class="col-md-3 mb-4">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5 class="card-title">Total Spots</h5>
+          <h2 class="card-text">{{ logistics.total_spots }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">Available Spots</h5>
+          <h2 class="card-text">{{ logistics.available_spots }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <h5 class="card-title">Occupied Spots</h5>
+          <h2 class="card-text">{{ logistics.occupied_spots }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5 class="card-title">Reserved Spots</h5>
+          <h2 class="card-text">{{ logistics.reserved_spots }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Revenue</h5>
+          <h3 class="card-text">
+            ₱{{ logistics.total_revenue|floatformat:2 }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Exceeded Hours</h5>
+          <h3 class="card-text">
+            {{ logistics.exceeded_hours|floatformat:1 }} hours
+          </h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

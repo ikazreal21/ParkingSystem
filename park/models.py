@@ -111,9 +111,56 @@ class Parked(models.Model):
     is_active = models.BooleanField(default=True)
     qr = models.ImageField(upload_to='qr_codes', blank=True)
     exceeded_hours = models.FloatField(default=0.0)
+    parking_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
         return str(self.user) + " " + str(self.spot) + " " + str(self.start_time) + " " + str(self.end_time)
 
     class Meta:
         verbose_name_plural = "Parked"
+
+class Logistics(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date = models.DateField()
+    total_spots = models.IntegerField(default=0)
+    occupied_spots = models.IntegerField(default=0)
+    reserved_spots = models.IntegerField(default=0)
+    available_spots = models.IntegerField(default=0)
+    total_revenue = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    exceeded_hours = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Logistics"
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"Logistics for {self.date}"
+
+class Summary(models.Model):
+    PERIOD_CHOICES = [
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    period_type = models.CharField(max_length=10, choices=PERIOD_CHOICES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    total_spots = models.IntegerField(default=0)
+    total_occupancy = models.IntegerField(default=0)
+    total_reservations = models.IntegerField(default=0)
+    total_revenue = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_exceeded_hours = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Summaries"
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"{self.period_type.capitalize()} Summary ({self.start_date} to {self.end_date})"

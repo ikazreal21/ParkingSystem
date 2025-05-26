@@ -633,3 +633,105 @@ def AssetLink(request):
     ]
 
     return JsonResponse(assetlink, safe=False)
+
+@login_required(login_url='login')
+def logistics_view(request):
+    today = timezone.now().date()
+    logistics = Logistics.objects.filter(date=today).first()
+    
+    if not logistics:
+        # Create new logistics entry for today
+        total_spots = ParkingSpot.objects.count()
+        occupied_spots = ParkingSpot.objects.filter(is_occupied=True).count()
+        reserved_spots = ParkingSpot.objects.filter(is_reserved=True).count()
+        available_spots = total_spots - occupied_spots - reserved_spots
+        
+        # Calculate revenue (you can adjust the rate per hour)
+        rate_per_hour = 50  # Example rate
+        exceeded_hours = Parked.objects.filter(
+            start_time__date=today,
+            exceeded_hours__gt=0
+        ).aggregate(total=models.Sum('exceeded_hours'))['total'] or 0
+        
+        total_revenue = exceeded_hours * rate_per_hour
+        
+        logistics = Logistics.objects.create(
+            date=today,
+            total_spots=total_spots,
+            occupied_spots=occupied_spots,
+            reserved_spots=reserved_spots,
+            available_spots=available_spots,
+            total_revenue=total_revenue,
+            exceeded_hours=exceeded_hours
+        )
+    
+    context = {
+        'logistics': logistics,
+        'today': today
+    }
+    return render(request, 'park/logistics.html', context)
+
+@login_required(login_url='login')
+def summary_view(request):
+    period = request.GET.get('period', 'daily')
+    today = timezone.now().date()
+    
+    if period == 'daily':
+        start_date = today
+        end_date = today
+    elif period == 'weekly':
+        start_date = today - timedelta(days=today.weekday())
+        end_date = start_date + timedelta(days=6)
+    elif period == 'monthly':
+        start_date = today.replace(day=1)
+        end_date = (start_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    else:  # yearly
+        start_date = today.replace(month=1, day=1)
+        end_date = today.replace(month=12, day=31)
+    
+    summary = Summary.objects.filter(
+        period_type=period,
+        start_date=start_date,
+        end_date=end_date
+    ).first()
+    
+    if not summary:
+        # Calculate summary data
+        total_spots = ParkingSpot.objects.count()
+        total_occupancy = Parked.objects.filter(
+            start_time__date__gte=start_date,
+            start_time__date__lte=end_date
+        ).count()
+        total_reservations = Reservation.objects.filter(
+            start_time__date__gte=start_date,
+            start_time__date__lte=end_date
+        ).count()
+        
+        # Calculate revenue
+        rate_per_hour = 50  # Example rate
+        exceeded_hours = Parked.objects.filter(
+            start_time__date__gte=start_date,
+            start_time__date__lte=end_date,
+            exceeded_hours__gt=0
+        ).aggregate(total=models.Sum('exceeded_hours'))['total'] or 0
+        
+        total_revenue = exceeded_hours * rate_per_hour
+        
+        summary = Summary.objects.create(
+            period_type=period,
+            start_date=start_date,
+            end_date=end_date,
+            total_spots=total_spots,
+            total_occupancy=total_occupancy,
+            total_reservations=total_reservations,
+            total_revenue=total_revenue,
+            total_exceeded_hours=exceeded_hours
+        )
+    
+    context = {
+        'summary': summary,
+        'period': period,
+        'start_date': start_date,
+        'end_date': end_date
+    }
+    return render(request, 'park/summary.html', context)

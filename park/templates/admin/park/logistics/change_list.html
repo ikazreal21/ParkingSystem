@@ -1,0 +1,111 @@
+{% extends "admin/change_list.html" %} 
+{% load static %} 
+{% block content %}
+<div class="chart-container">
+  <h2 class="chart-title">Parking Statistics Overview</h2>
+  <div class="chart-wrapper">
+    <canvas id="parkingStatsChart"></canvas>
+  </div>
+</div>
+
+<div class="chart-container">
+  <h2 class="chart-title">Revenue Trend</h2>
+  <div class="chart-wrapper">
+    <canvas id="revenueChart"></canvas>
+  </div>
+</div>
+
+<!-- <pre id="logistics-debug">{{ logistics_data|safe }}</pre> -->
+
+{{ block.super }}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Get data from the page
+      const logisticsData = {{ logistics_data|safe }};
+
+      // Parking Stats Chart
+      const parkingCtx = document.getElementById('parkingStatsChart').getContext('2d');
+      new Chart(parkingCtx, {
+          type: 'bar',
+          data: {
+              labels: logisticsData.map(item => item.date),
+              datasets: [{
+                  label: 'Available Spots',
+                  data: logisticsData.map(item => item.available_spots),
+                  backgroundColor: '#4CAF50',
+                  borderColor: '#4CAF50',
+                  borderWidth: 1
+              }, {
+                  label: 'Occupied Spots',
+                  data: logisticsData.map(item => item.occupied_spots),
+                  backgroundColor: '#fecb21',
+                  borderColor: '#fecb21',
+                  borderWidth: 1
+              }, {
+                  label: 'Reserved Spots',
+                  data: logisticsData.map(item => item.reserved_spots),
+                  backgroundColor: '#e74c3c',
+                  borderColor: '#e74c3c',
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      title: {
+                          display: true,
+                          text: 'Number of Spots'
+                      }
+                  },
+                  x: {
+                      title: {
+                          display: true,
+                          text: 'Date'
+                      }
+                  }
+              }
+          }
+      });
+
+      // Revenue Chart
+      const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+      new Chart(revenueCtx, {
+          type: 'line',
+          data: {
+              labels: logisticsData.map(item => item.date),
+              datasets: [{
+                  label: 'Daily Revenue',
+                  data: logisticsData.map(item => item.total_revenue),
+                  borderColor: '#2c3e50',
+                  backgroundColor: 'rgba(44, 62, 80, 0.1)',
+                  fill: true,
+                  tension: 0.4
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      title: {
+                          display: true,
+                          text: 'Revenue (₱)'
+                      }
+                  },
+                  x: {
+                      title: {
+                          display: true,
+                          text: 'Date'
+                      }
+                  }
+              }
+          }
+      });
+  });
+</script>
+{% endblock %}

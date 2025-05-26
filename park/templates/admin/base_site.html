@@ -1,0 +1,288 @@
+{% extends "admin/base_site.html" %} {% load static %} {% block extrastyle %}
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --primary: #fecb21;
+    --primary-fg: #000000;
+    --body-fg: #000000;
+    --body-bg: #fff;
+    --header-color: #000000;
+    --header-bg: #fecb21;
+    --header-link-color: #000000;
+    --breadcrumbs-bg: #fecb21;
+    --breadcrumbs-fg: #000000;
+    --link-fg: #000000;
+    --link-hover-color: #000000;
+    --link-selected-fg: #000000;
+    --button-fg: #000000;
+    --button-bg: #fecb21;
+    --button-hover-bg: #e6b800;
+    --default-button-bg: #fecb21;
+    --default-button-hover-bg: #e6b800;
+    --close-button-bg: #fecb21;
+    --close-button-hover-bg: #e6b800;
+    --delete-button-bg: #fecb21;
+    --delete-button-hover-bg: #e6b800;
+    --object-tools-fg: #000000;
+    --object-tools-bg: #fecb21;
+    --object-tools-hover-bg: #e6b800;
+  }
+
+  body {
+    font-family: "Poppins", sans-serif;
+    background: var(--body-bg);
+    color: var(--body-fg);
+  }
+
+  #header {
+    background: var(--header-bg);
+    color: var(--header-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 1rem 2rem;
+    border-bottom: 2px solid var(--accent);
+  }
+
+  #branding h1 {
+    font-weight: 600;
+    font-size: 1.5rem;
+  }
+
+  #branding h1 a:link,
+  #branding h1 a:visited {
+    color: var(--header-link-color);
+    text-decoration: none;
+  }
+
+  .module {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border: 1px solid #eee;
+  }
+
+  .module h2,
+  .module caption {
+    background: var(--accent);
+    color: var(--primary-fg);
+    font-weight: 500;
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .button,
+  input[type="submit"],
+  input[type="button"],
+  .submit-row input {
+    background: var(--button-bg);
+    color: var(--button-fg);
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .button:hover,
+  input[type="submit"]:hover,
+  input[type="button"]:hover {
+    background: var(--button-hover-bg);
+    transform: translateY(-1px);
+  }
+
+  .button.default {
+    background: var(--default-button-bg);
+    color: var(--primary-fg);
+    border: none;
+  }
+
+  .button.default:hover {
+    background: var(--default-button-hover-bg);
+  }
+
+  .button.delete {
+    background: var(--delete-button-bg);
+  }
+
+  .button.delete:hover {
+    background: var(--delete-button-hover-bg);
+  }
+
+  .object-tools a {
+    background: var(--object-tools-bg);
+    color: var(--object-tools-fg);
+    border-radius: 6px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    border: 1px solid #ddd;
+  }
+
+  .object-tools a:hover {
+    background: var(--object-tools-hover-bg);
+    transform: translateY(-1px);
+  }
+
+  #changelist-filter {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+  }
+
+  #changelist-filter h2 {
+    background: var(--accent);
+    color: var(--primary-fg);
+    border-radius: 8px 8px 0 0;
+    padding: 1rem;
+  }
+
+  #changelist-filter li.selected a {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .paginator {
+    margin: 1rem 0;
+  }
+
+  .paginator a:link,
+  .paginator a:visited {
+    background: var(--button-bg);
+    color: var(--button-fg);
+    border-radius: 6px;
+    padding: 8px 16px;
+    margin: 0 4px;
+    transition: all 0.3s ease;
+    border: 1px solid #ddd;
+  }
+
+  .paginator a:hover {
+    background: var(--button-hover-bg);
+    transform: translateY(-1px);
+  }
+
+  .paginator .this-page {
+    background: var(--accent);
+    color: var(--primary-fg);
+    border-radius: 6px;
+    padding: 8px 16px;
+  }
+
+  .row1 {
+    background: #fff;
+  }
+
+  .row2 {
+    background: #f8f9fa;
+  }
+
+  #content {
+    padding: 2rem;
+  }
+
+  .dashboard .module table th {
+    width: 100%;
+    padding: 1rem;
+    background: #f8f9fa;
+    color: var(--primary-fg);
+  }
+
+  .dashboard .module table td {
+    white-space: nowrap;
+    padding: 1rem;
+  }
+
+  .dashboard .module table td a {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--accent);
+    color: var(--primary-fg);
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .dashboard .module table td a:hover {
+    background: var(--default-button-hover-bg);
+    transform: translateY(-1px);
+  }
+
+  /* Chart container styles */
+  .chart-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #eee;
+  }
+
+  .chart-title {
+    color: var(--primary-fg);
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+  }
+
+  /* Links */
+  a:link,
+  a:visited {
+    color: var(--link-fg);
+  }
+
+  a:hover {
+    color: var(--link-hover-color);
+  }
+
+  /* Table styles */
+  #changelist table thead th {
+    background: #f8f9fa;
+    color: var(--primary-fg);
+  }
+
+  #changelist table tbody tr:hover {
+    background: #f8f9fa;
+  }
+
+  /* Form styles */
+  .form-row {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .form-row label {
+    color: var(--primary-fg);
+    font-weight: 500;
+  }
+
+  .form-row input,
+  .form-row select,
+  .form-row textarea {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+  }
+
+  .form-row input:focus,
+  .form-row select:focus,
+  .form-row textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+</style>
+{% endblock %} {% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}"> TCT Parking Administration </a>
+</h1>
+{% endblock %} {% block nav-global %}{% endblock %}
