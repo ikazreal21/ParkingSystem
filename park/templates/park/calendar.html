@@ -1,40 +1,233 @@
-{% extends 'park/base.html' %}
-{% block content %}
-<div class="card">
-    <h5 class="card-header">Calendar</h5>
-    <div class="flex justify-between items-center p-4">
-        <button class="px-4 py-2 bg-gray-200 rounded" onclick="window.location='?month={{ current_month|add:-1 }}&year={{ current_year }}'">Previous</button>
-        <h2 class="text-lg font-bold">{{ current_month }}/{{ current_year }}</h2>
-        <button class="px-4 py-2 bg-gray-200 rounded" onclick="window.location='?month={{ current_month|add:1 }}&year={{ current_year }}'">Next</button>
-    </div>
-    <table class="w-full border-collapse">
-        <thead>
-            <tr class="bg-gray-200">
-                <th class="p-2">Mon</th>
-                <th class="p-2">Tue</th>
-                <th class="p-2">Wed</th>
-                <th class="p-2">Thu</th>
-                <th class="p-2">Fri</th>
-                <th class="p-2">Sat</th>
-                <th class="p-2">Sun</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for week in weeks %}
-                <tr>
-                    {% for day in week %}
-                        <td class="p-2 border h-16">
-                            {% if day %}
-                                <a href="{% url 'reservations_by_date' day %}"
-                                   class="block w-full h-full text-center p-2 rounded-lg {% if day in reserved_dates %}bg-red-500 text-black{% else %}bg-gray-100{% endif %}">
-                                    {{ day.day }}
-                                </a>
-                            {% endif %}
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
+{% extends 'park/base.html' %} {% block content %}
+<style>
+  .calendar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .calendar-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+  }
+
+  .nav-button {
+    padding: 8px 16px;
+    background: #4a5568;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .nav-button:hover {
+    background: #2d3748;
+  }
+
+  .calendar-grid {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
+  }
+
+  .calendar-grid th {
+    padding: 12px;
+    background: #edf2f7;
+    color: #4a5568;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 6px;
+  }
+
+  .calendar-grid td {
+    padding: 0;
+    height: 80px;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+  }
+
+  .calendar-grid td:hover {
+    transform: scale(1.02);
+  }
+
+  .date-cell {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    text-decoration: none;
+    color: #2d3748;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .date-cell.reserved {
+    background: #FDCB27;
+    color: white;
+  }
+
+  .date-cell:not(.reserved) {
+    background: #f7fafc;
+  }
+
+  .date-cell:hover {
+    background: #e2e8f0;
+  }
+
+  .date-cell.reserved:hover {
+    background: #f56565;
+  }
+
+  .mobile-calendar {
+    display: none;
+    padding: 15px 0;
+  }
+
+  .mobile-date-card {
+    background: #FDCB27;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 0 8px;
+    min-width: 100px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-date-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .mobile-date-day {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .mobile-date-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .mobile-date-month {
+    font-size: 0.75rem;
+    opacity: 0.9;
+  }
+
+  @media (max-width: 768px) {
+    .calendar-container {
+      padding: 10px;
+    }
+
+    .desktop-calendar {
+      display: none;
+    }
+
+    .mobile-calendar {
+      display: block;
+    }
+
+    .calendar-header {
+      padding: 10px;
+    }
+
+    .calendar-title {
+      font-size: 1.25rem;
+    }
+
+    .nav-button {
+      padding: 6px 12px;
+      font-size: 0.875rem;
+    }
+  }
+</style>
+
+<div class="calendar-container">
+  <div class="calendar-header">
+    <button
+      class="nav-button"
+      onclick="window.location='?month={{ current_month|add:-1 }}&year={{ current_year }}'"
+    >
+      Previous
+    </button>
+    <h2 class="calendar-title">{{ current_month }}/{{ current_year }}</h2>
+    <button
+      class="nav-button"
+      onclick="window.location='?month={{ current_month|add:1 }}&year={{ current_year }}'"
+    >
+      Next
+    </button>
+  </div>
+
+  <!-- Desktop Calendar View -->
+  <div class="desktop-calendar">
+    <table class="calendar-grid">
+      <thead>
+        <tr>
+          <th>Mon</th>
+          <th>Tue</th>
+          <th>Wed</th>
+          <th>Thu</th>
+          <th>Fri</th>
+          <th>Sat</th>
+          <th>Sun</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for week in weeks %}
+        <tr>
+          {% for day in week %}
+          <td>
+            {% if day %}
+            <a
+              href="{% url 'reservations_by_date' day %}"
+              class="date-cell {% if day in reserved_dates %}reserved{% endif %}"
+            >
+              {{ day.day }}
+            </a>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
+
+  <!-- Mobile Calendar View -->
+  <div class="mobile-calendar">
+    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch">
+      <div style="display: flex; padding: 0 10px">
+        {% for week in weeks %} 
+            {% for day in week %} 
+                {% if day and day in reserved_dates %}
+                <a href="{% url 'reservations_by_date' day %}" class="mobile-date-card">
+                <div class="mobile-date-day">{{ day|date:"D" }}</div>
+                <div class="mobile-date-number">{{ day.day }}</div>
+                <div class="mobile-date-month">{{ day|date:"M Y" }}</div>
+                </a>
+                {% endif %} 
+            {% endfor %} 
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

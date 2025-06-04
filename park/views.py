@@ -412,34 +412,66 @@ def view_qr(request, reservation_id):
 # Calendar 
 @login_required(login_url='login')
 def calendar_view(request):
-    today = date.today()
-    month = int(request.GET.get('month', today.month))
-    year = int(request.GET.get('year', today.year))
-    start_day = date(year, month, 1)
-    days_in_month = monthrange(year, month)[1]
-    reservations = Reservation.objects.filter(start_time__date__year=year, start_time__date__month=month)
-    reserved_dates = {res.start_time.date() for res in reservations}
-    first_weekday = start_day.weekday()
-    calendar_days = []
-    # Fill in the empty days at the start of the month
-    for _ in range(first_weekday):
-        calendar_days.append(None)
-    # Fill in the days of the current month
-    for day in range(1, days_in_month + 1):
-        calendar_days.append(date(year, month, day))
-    # Ensure the total days fill complete weeks (42 days for 6 weeks)
-    while len(calendar_days) % 7 != 0:
-        calendar_days.append(None)
-    # Split days into weeks
-    weeks = [calendar_days[i:i + 7] for i in range(0, len(calendar_days), 7)]
+    # Set timezone to Asia/Manila
+    manila_tz = pytz.timezone('Asia/Manila')
+    today = localtime(now(), manila_tz)
+    
+    try:
+        month = int(request.GET.get('month', today.month))
+        year = int(request.GET.get('year', today.year))
+        
+        # Validate month and year
+        if month < 1 or month > 12:
+            month = today.month
+        if year < 1900 or year > 9999:
+            year = today.year
+            
+        # Create datetime in Manila timezone
+        start_day = manila_tz.localize(datetime(year, month, 1))
+        days_in_month = monthrange(year, month)[1]
+        
+        # Get reservations for the month in Manila timezone
+        reservations = Reservation.objects.filter(
+            start_time__year=year,
+            start_time__month=month
+        )
+        
+        # Convert reservation dates to Manila timezone
+        reserved_dates = {
+            res.start_time.astimezone(manila_tz).date() 
+            for res in reservations
+        }
+        
+        first_weekday = start_day.weekday()
+        calendar_days = []
+        
+        # Fill in the empty days at the start of the month
+        for _ in range(first_weekday):
+            calendar_days.append(None)
+            
+        # Fill in the days of the current month
+        for day in range(1, days_in_month + 1):
+            calendar_days.append(
+                manila_tz.localize(datetime(year, month, day)).date()
+            )
+            
+        # Ensure the total days fill complete weeks (42 days for 6 weeks)
+        while len(calendar_days) % 7 != 0:
+            calendar_days.append(None)
+            
+        # Split days into weeks
+        weeks = [calendar_days[i:i + 7] for i in range(0, len(calendar_days), 7)]
 
-    context = {
-        'weeks': weeks,
-        'reserved_dates': reserved_dates,
-        'current_month': month,
-        'current_year': year,
-    }
-    return render(request, 'park/calendar.html', context)
+        context = {
+            'weeks': weeks,
+            'reserved_dates': reserved_dates,
+            'current_month': month,
+            'current_year': year,
+        }
+        return render(request, 'park/calendar.html', context)
+    except (ValueError, TypeError):
+        # If there's any error in parsing the date, return to current month/year
+        return redirect('calendar')
 
 # Reservations by Date View
 @login_required(login_url='login')
