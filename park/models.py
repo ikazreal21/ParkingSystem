@@ -72,12 +72,13 @@ class Reservation(models.Model):
     end_time = models.DateTimeField()
     is_active = models.BooleanField(default=True)
     qr = models.ImageField(upload_to='qr_codes', blank=True)
+    plate_number = models.CharField(max_length=255)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 
     def get_local_start_time(self):
         """ Get start_time in Asia/Manila timezone without saving """
         manila_tz = pytz.timezone('Asia/Manila')
-        return self.start_time.astimezone(manila_tz) if self.start_time else None
+        return self.start_time.astimezone(manila_tz) if self.start_time else Nones
 
     def get_local_end_time(self):
         """ Get end_time in Asia/Manila timezone without saving """
