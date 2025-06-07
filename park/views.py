@@ -288,6 +288,7 @@ def reserve_spot(request):
         spot_id = request.POST['spot_id']
         start_time = make_aware(datetime.strptime(request.POST['start_time'], "%Y-%m-%dT%H:%M"))
         end_time = make_aware(datetime.strptime(request.POST['end_time'], "%Y-%m-%dT%H:%M"))
+        plate_number = request.POST['plate_number']
 
         spot = get_object_or_404(ParkingSpot, id=spot_id)
 
@@ -310,6 +311,7 @@ def reserve_spot(request):
         reservation = Reservation.objects.create(
             user=request.user,
             spot=spot,
+            plate_number=plate_number,
             start_time=start_time,
             end_time=end_time,
             status="pending"  # Set initial status
