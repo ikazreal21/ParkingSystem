@@ -1,0 +1,69 @@
+{% extends 'park/admin/base.html' %} {% load static %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4 class="fw-bold py-3 mb-4">Parked Vehicle Details</h4>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h5 class="mb-3">Vehicle Information</h5>
+            <table class="table">
+              <tr>
+                <th>User</th>
+                <td>{{ parked.user.username }}</td>
+              </tr>
+              <tr>
+                <th>Plate Number</th>
+                <td>{{ plate_number }}</td>
+              </tr>
+              <tr>
+                <th>Spot</th>
+                <td>{{ parked.spot.spot_number }} - {{ parked.spot.name }}</td>
+              </tr>
+              <tr>
+                <th>Start Time</th>
+                <td>{{ parked.start_time|date:"M d, Y H:i" }}</td>
+              </tr>
+              <tr>
+                <th>End Time</th>
+                <td>
+                  {{ parked.end_time|date:"M d, Y H:i"|default:"Still Parked" }}
+                </td>
+              </tr>
+              <tr>
+                <th>Exceeded Hours</th>
+                <td>{{ parked.exceeded_hours }}</td>
+              </tr>
+              <tr>
+                <th>Parking Fee</th>
+                <td>₱{{ parked.parking_fee }}</td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td>
+                  <span
+                    class="badge {% if parked.is_active %}bg-label-success{% else %}bg-label-info{% endif %}"
+                  >
+                    {% if parked.is_active %} 
+                    Active 
+                    {% else %} 
+                    Completed 
+                    {% endif %}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <a href="{% url 'admin_parked' %}" class="btn btn-secondary"
+            >Back to List</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

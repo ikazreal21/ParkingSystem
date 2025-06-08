@@ -1,0 +1,202 @@
+{% extends 'park/base.html' %} {% load static %} {% block content %}
+<!-- <div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row"> -->
+<div class="col-12">
+  <h4 class="fw-bold py-3 mb-4">Admin Dashboard</h4>
+
+  <!-- Statistics Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <span class="fw-semibold d-block mb-1">Total Spots</span>
+          <h3 class="card-title mb-2">{{total_spots}}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <span class="fw-semibold d-block mb-1">Reserved Spots</span>
+          <h3 class="card-title mb-2">{{reserved_spots}}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <span class="fw-semibold d-block mb-1">Occupied Spots</span>
+          <h3 class="card-title mb-2">{{occupied_spots}}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <span class="fw-semibold d-block mb-1">Available Spots</span>
+          <h3 class="card-title mb-2">{{available_spots}}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Statistics -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <span class="fw-semibold d-block mb-1">Total Users</span>
+          <h3 class="card-title mb-2">{{total_users}}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <span class="fw-semibold d-block mb-1">Verified Users</span>
+          <h3 class="card-title mb-2">{{verified_users}}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Reservations -->
+  <div class="card mb-4">
+    <h5 class="card-header">Recent Reservations</h5>
+    <div class="card-body">
+      <div class="table-responsive text-nowrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Spot</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for reservation in recent_reservations %}
+            <tr>
+              <td>{{reservation.user.username}}</td>
+              <td>{{reservation.spot.name}}</td>
+              <td>{{reservation.start_time}}</td>
+              <td>{{reservation.end_time}}</td>
+              <td>{{reservation.status}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Parked Vehicles -->
+  <div class="card mb-4">
+    <h5 class="card-header">Recent Parked Vehicles</h5>
+    <div class="card-body">
+      <div class="table-responsive text-nowrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Spot</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Exceeded Hours</th>
+              <th>Parking Fee</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for parked in recent_parked %}
+            <tr>
+              <td>{{parked.user.username}}</td>
+              <td>{{parked.spot.name}}</td>
+              <td>{{parked.start_time}}</td>
+              <td>{{parked.end_time}}</td>
+              <td>{{parked.exceeded_hours}}</td>
+              <td>{{parked.parking_fee}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's Logistics -->
+  <div class="card mb-4">
+    <h5 class="card-header">Today's Logistics</h5>
+    <div class="card-body">
+      {% if logistics %}
+      <div class="row">
+        <div class="col-md-3">
+          <p><strong>Total Spots:</strong> {{logistics.total_spots}}</p>
+        </div>
+        <div class="col-md-3">
+          <p><strong>Occupied Spots:</strong> {{logistics.occupied_spots}}</p>
+        </div>
+        <div class="col-md-3">
+          <p><strong>Reserved Spots:</strong> {{logistics.reserved_spots}}</p>
+        </div>
+        <div class="col-md-3">
+          <p>
+            <strong>Available Spots:</strong>
+            {{logistics.available_spots}}
+          </p>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-md-4">
+          <p><strong>Total Revenue:</strong> ₱{{logistics.total_revenue}}</p>
+        </div>
+        <div class="col-md-4">
+          <p><strong>Exceeded Hours:</strong> {{logistics.exceeded_hours}}</p>
+        </div>
+      </div>
+      {% else %}
+      <p>No logistics data available for today.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Summaries -->
+  <div class="card mb-4">
+    <h5 class="card-header">Recent Summaries</h5>
+    <div class="card-body">
+      <div class="table-responsive text-nowrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Total Spots</th>
+              <th>Total Occupancy</th>
+              <th>Total Reservations</th>
+              <th>Total Revenue</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for s in summary %}
+            <tr>
+              <td>{{s.period_type}}</td>
+              <td>{{s.start_date}}</td>
+              <td>{{s.end_date}}</td>
+              <td>{{s.total_spots}}</td>
+              <td>{{s.total_occupancy}}</td>
+              <td>{{s.total_reservations}}</td>
+              <td>₱{{s.total_revenue}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- </div>
+  </div>
+</div> -->
+{% endblock %}

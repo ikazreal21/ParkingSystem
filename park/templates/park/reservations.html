@@ -1,41 +1,157 @@
-{% extends 'park/base.html' %}
-{% load static %}
+{% extends 'park/base.html' %} 
+{% load static %} 
 {% block content %}
 <div class="card">
-    <h5 class="card-header">Reservation History</h5>
-    <div class="table-responsive text-nowrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Spot Number</th>
-            <th>Spot Name</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Action</th>
+  <h5 class="card-header">Reservation History</h5>
+  <div class="table-responsive text-nowrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Spot Number</th>
+          <th>Spot Name</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% if reservations %} 
+          {% for reservation in reservations %}
+          <tr
+            style="cursor: pointer"
+            data-bs-toggle="modal"
+            data-bs-target="#reservationModal{{ reservation.id }}"
+          >
+            <td>
+              <strong>{{ reservation.spot.spot_number }}</strong>
+            </td>
+            <td>{{ reservation.spot.name }}</td>
+            <td>{{ reservation.start_time|date:"M d, Y h:i A" }}</td>
+            <td>{{ reservation.end_time|date:"M d, Y h:i A" }}</td>
+            <td>
+              <span
+                class="badge {% if reservation.status == 'pending' %}bg-warning{% elif reservation.status == 'parked' %}bg-success{% elif reservation.status == 'complete' %}bg-info{% else %}bg-danger{% endif %}"
+              >
+                {{ reservation.status|title }}
+              </span>
+            </td>
+            <td>
+              <a
+                href="{% url 'view_qr' reservation.id %}"
+                class="btn btn-primary btn-sm"
+                onclick="event.stopPropagation();"
+                >View QR Code</a
+              >
+            </td>
           </tr>
-        </thead>
-        <tbody class="table-border-bottom-0">
-          {% if reservations %}
-            {% for reservation in reservations %}
-              <tr>
-                <td>
-                  <strong>{{ reservation.spot.spot_number }}</strong>
-                </td>
-                <td>{{ reservation.spot.name }}</td>
-                <td>{{ reservation.start_time|date:"M d, Y h:i A" }}</td>
-                <td>{{ reservation.end_time|date:"M d, Y h:i A" }}</td>
-                <td>
-                  <a href="{% url 'view_qr' reservation.id %}" class="btn btn-primary btn-sm">View QR Code</a>
-                </td>
-              </tr>
-            {% endfor %}
-          {% else %}
-            <tr>
-              <td colspan="4" class="text-center">No reservations found.</td>
-            </tr>
-          {% endif %}
-        </tbody>
-      </table>
-    </div>
+
+          <!-- Modal for each reservation -->
+          <div
+            class="modal fade"
+            id="reservationModal{{ reservation.id }}"
+            tabindex="-1"
+            aria-labelledby="reservationModalLabel{{ reservation.id }}"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5
+                    class="modal-title"
+                    id="reservationModalLabel{{ reservation.id }}"
+                  >
+                    Reservation Details
+                  </h5>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div class="modal-body">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <strong>Reference Number:</strong>
+                      <p>{{ reservation.reference_number }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <strong>Status:</strong>
+                      <p>
+                        <span
+                          class="badge {% if reservation.status == 'pending' %}bg-warning{% elif reservation.status == 'parked' %}bg-success{% elif reservation.status == 'complete' %}bg-info{% else %}bg-danger{% endif %}"
+                        >
+                          {{ reservation.status|title }}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <strong>Parking Spot:</strong>
+                      <p>
+                        {{ reservation.spot.name }}:
+                        (Spot Number: {{ reservation.spot.spot_number }})
+                      </p>
+                    </div>
+                    <div class="col-md-6">
+                      <strong>Plate Number:</strong>
+                      <p>{{ reservation.plate_number }}</p>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <strong>Start Time:</strong>
+                      <p>{{ reservation.start_time|date:"M d, Y h:i A" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <strong>End Time:</strong>
+                      <p>{{ reservation.end_time|date:"M d, Y h:i A" }}</p>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <strong>User:</strong>
+                      <p>{{ reservation.user.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <strong>Active:</strong>
+                      <p>
+                        {% if reservation.is_active %}
+                          Yes
+                        {% else %}
+                          No
+                        {% endif %}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <a
+                    href="{% url 'view_qr' reservation.id %}"
+                    class="btn btn-primary"
+                    >View QR Code</a
+                  >
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %} 
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center">No reservations found.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

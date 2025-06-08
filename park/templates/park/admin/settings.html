@@ -1,0 +1,252 @@
+{% extends 'park/admin/base.html' %} {% load static %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4 class="fw-bold py-3 mb-4">System Settings</h4>
+
+    <!-- Settings Form -->
+    <div class="card">
+      <div class="card-body">
+        <form method="post" class="row g-3">
+          {% csrf_token %}
+
+          <!-- Parking Settings -->
+          <div class="col-12">
+            <h5 class="mb-3">Parking Settings</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Base Hourly Rate (₱)</label>
+                <input
+                  type="number"
+                  name="base_hourly_rate"
+                  class="form-control"
+                  value="{{ settings.base_hourly_rate }}"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Overtime Rate Multiplier</label>
+                <input
+                  type="number"
+                  name="overtime_rate_multiplier"
+                  class="form-control"
+                  value="{{ settings.overtime_rate_multiplier }}"
+                  step="0.1"
+                  min="1"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Maximum Daily Rate (₱)</label>
+                <input
+                  type="number"
+                  name="max_daily_rate"
+                  class="form-control"
+                  value="{{ settings.max_daily_rate }}"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Grace Period (minutes)</label>
+                <input
+                  type="number"
+                  name="grace_period"
+                  class="form-control"
+                  value="{{ settings.grace_period }}"
+                  min="0"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Reservation Settings -->
+          <div class="col-12">
+            <h5 class="mb-3">Reservation Settings</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label"
+                  >Maximum Reservation Duration (hours)</label
+                >
+                <input
+                  type="number"
+                  name="max_reservation_duration"
+                  class="form-control"
+                  value="{{ settings.max_reservation_duration }}"
+                  min="1"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Minimum Notice Period (hours)</label>
+                <input
+                  type="number"
+                  name="min_notice_period"
+                  class="form-control"
+                  value="{{ settings.min_notice_period }}"
+                  min="0"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Maximum Advance Booking (days)</label>
+                <input
+                  type="number"
+                  name="max_advance_booking"
+                  class="form-control"
+                  value="{{ settings.max_advance_booking }}"
+                  min="1"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Cancellation Window (hours)</label>
+                <input
+                  type="number"
+                  name="cancellation_window"
+                  class="form-control"
+                  value="{{ settings.cancellation_window }}"
+                  min="0"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification Settings -->
+          <div class="col-12">
+            <h5 class="mb-3">Notification Settings</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Expiration Warning (minutes)</label>
+                <input
+                  type="number"
+                  name="expiration_warning"
+                  class="form-control"
+                  value="{{ settings.expiration_warning }}"
+                  min="0"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Overtime Warning (minutes)</label>
+                <input
+                  type="number"
+                  name="overtime_warning"
+                  class="form-control"
+                  value="{{ settings.overtime_warning }}"
+                  min="0"
+                />
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="enable_email_notifications"
+                    {%
+                    if
+                    settings.enable_email_notifications
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <label class="form-check-label"
+                    >Enable Email Notifications</label
+                  >
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="enable_sms_notifications"
+                    {%
+                    if
+                    settings.enable_sms_notifications
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <label class="form-check-label"
+                    >Enable SMS Notifications</label
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Settings -->
+          <div class="col-12">
+            <h5 class="mb-3">System Settings</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="maintenance_mode"
+                    {%
+                    if
+                    settings.maintenance_mode
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <label class="form-check-label">Maintenance Mode</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="enable_auto_logistics"
+                    {%
+                    if
+                    settings.enable_auto_logistics
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <label class="form-check-label"
+                    >Enable Automatic Logistics</label
+                  >
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="enable_auto_summary"
+                    {%
+                    if
+                    settings.enable_auto_summary
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <label class="form-check-label"
+                    >Enable Automatic Summaries</label
+                  >
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Summary Period (days)</label>
+                <input
+                  type="number"
+                  name="summary_period"
+                  class="form-control"
+                  value="{{ settings.summary_period }}"
+                  min="1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

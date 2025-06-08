@@ -66,6 +66,7 @@ class Reservation(models.Model):
 
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reference_number = models.CharField(max_length=255, blank=True, null=True, default=create_rand_id, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     spot = models.ForeignKey(ParkingSpot, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
@@ -78,7 +79,7 @@ class Reservation(models.Model):
     def get_local_start_time(self):
         """ Get start_time in Asia/Manila timezone without saving """
         manila_tz = pytz.timezone('Asia/Manila')
-        return self.start_time.astimezone(manila_tz) if self.start_time else Nones
+        return self.start_time.astimezone(manila_tz) if self.start_time else None
 
     def get_local_end_time(self):
         """ Get end_time in Asia/Manila timezone without saving """

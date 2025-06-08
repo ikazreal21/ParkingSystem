@@ -1,3 +1,4 @@
+from django.conf import Settings
 from django.shortcuts import render, redirect
 from django.utils.datastructures import MultiValueDictKeyError
 from django.http import HttpResponse
@@ -37,6 +38,9 @@ from django.utils.timezone import make_aware
 from django.contrib.auth.models import AnonymousUser
 
 import pytz
+from django.core.paginator import Paginator
+import json
+
 
 
 def get_remaining_time(reservation):
@@ -128,7 +132,10 @@ def Reviews(request):
 
 def Login(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        if request.user.is_staff:
+            return redirect('admin_dashboard')
+        else:
+            return redirect('dashboard')
     else:
         if request.method == "POST":
             username = request.POST.get("username")
@@ -534,6 +541,7 @@ def scan_to_occupy(request, pk):
             # If already occupied, unoccupy it
             reservation.spot.is_occupied = False
             reservation.spot.is_reserved = False
+            reservation.is_active = False
             reservation.status = "complete"
 
             parked_user = reservation.user
@@ -769,3 +777,318 @@ def summary_view(request):
         'end_date': end_date
     }
     return render(request, 'park/summary.html', context)
+
+@login_required(login_url='login')
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    # Get statistics
+    total_spots = ParkingSpot.objects.count()
+    reserved_spots = ParkingSpot.objects.filter(is_reserved=True).count()
+    occupied_spots = ParkingSpot.objects.filter(is_occupied=True).count()
+    available_spots = total_spots - reserved_spots - occupied_spots
+    
+    # Get user statistics
+    total_users = User.objects.count()
+    verified_users = Profile.objects.filter(is_verified=True).count()
+    
+    # Get today's logistics
+    today = timezone.now().date()
+    logistics = Logistics.objects.filter(date=today).first()
+    
+    context = {
+        'total_spots': total_spots,
+        'reserved_spots': reserved_spots,
+        'occupied_spots': occupied_spots,
+        'available_spots': available_spots,
+        'total_users': total_users,
+        'verified_users': verified_users,
+        'logistics': logistics,
+    }
+    
+    return render(request, 'park/admin/dashboard.html', context)
+
+@login_required(login_url='login')
+def admin_reservations(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    # Get filter parameters
+    status = request.GET.get('status')
+    date = request.GET.get('date')
+    search = request.GET.get('search')
+    
+    # Base queryset
+    reservations = Reservation.objects.all().order_by('-start_time')
+    
+    # Apply filters
+    if status:
+        reservations = reservations.filter(status=status)
+    if date:
+        reservations = reservations.filter(start_time__date=date)
+    if search:
+        reservations = reservations.filter(
+            Q(user__username__icontains=search) |
+            Q(spot__spot_number__icontains=search)
+        )
+    
+    # Pagination
+    paginator = Paginator(reservations, 10)
+    page = request.GET.get('page')
+    reservations = paginator.get_page(page)
+    
+    context = {
+        'reservations': reservations,
+    }
+    
+    return render(request, 'park/admin/reservations.html', context)
+
+@login_required(login_url='login')
+def admin_parked(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    # Get filter parameters
+    status = request.GET.get('status')
+    date = request.GET.get('date')
+    search = request.GET.get('search')
+    
+    # Base queryset
+    parked_vehicles = Parked.objects.all().order_by('-start_time')
+    
+    # Apply filters
+    if status:
+        parked_vehicles = parked_vehicles.filter(status=status)
+    if date:
+        parked_vehicles = parked_vehicles.filter(start_time__date=date)
+    if search:
+        parked_vehicles = parked_vehicles.filter(
+            Q(user__username__icontains=search) |
+            Q(spot__spot_number__icontains=search)
+        )
+    
+    # Pagination
+    paginator = Paginator(parked_vehicles, 10)
+    page = request.GET.get('page')
+    parked_vehicles = paginator.get_page(page)
+    
+    context = {
+        'parked_vehicles': parked_vehicles,
+    }
+    
+    return render(request, 'park/admin/parked.html', context)
+
+@login_required(login_url='login')
+def admin_parked_detail(request, parked_id):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    parked = get_object_or_404(Parked, id=parked_id)
+    # Get the associated reservation to get the plate number
+    reservation = Reservation.objects.filter(
+        user=parked.user,
+        spot=parked.spot,
+        start_time__lte=parked.start_time,
+        end_time__gte=parked.start_time
+    ).first()
+    
+    context = {
+        'parked': parked,
+        'plate_number': reservation.plate_number if reservation else 'N/A'
+    }
+    return render(request, 'park/admin/parked_detail.html', context)
+
+@login_required(login_url='login')
+def admin_logistics(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    # Get filter parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    # Base queryset
+    logistics = Logistics.objects.all().order_by('-date')
+    
+    # Apply filters
+    if start_date:
+        logistics = logistics.filter(date__gte=start_date)
+    if end_date:
+        logistics = logistics.filter(date__lte=end_date)
+    
+    # Get data for charts
+    dates = [log.date.strftime('%Y-%m-%d') for log in logistics[:7]]
+    occupied_spots_data = [log.occupied_spots for log in logistics[:7]]
+    reserved_spots_data = [log.reserved_spots for log in logistics[:7]]
+    revenue_data = [float(log.total_revenue) for log in logistics[:7]]
+    
+    # Calculate totals
+    total_spots = ParkingSpot.objects.count()
+    occupied_spots = ParkingSpot.objects.filter(is_occupied=True).count()
+    reserved_spots = ParkingSpot.objects.filter(is_reserved=True).count()
+    total_revenue = sum(float(log.total_revenue) for log in logistics)
+    
+    # Pagination
+    paginator = Paginator(logistics, 10)
+    page = request.GET.get('page')
+    logistics = paginator.get_page(page)
+    
+    context = {
+        'logistics': logistics,
+        'total_spots': total_spots,
+        'occupied_spots': occupied_spots,
+        'reserved_spots': reserved_spots,
+        'total_revenue': total_revenue,
+        'dates': json.dumps(dates),
+        'occupied_spots_data': json.dumps(occupied_spots_data),
+        'reserved_spots_data': json.dumps(reserved_spots_data),
+        'revenue_data': json.dumps(revenue_data),
+    }
+    
+    return render(request, 'park/admin/logistics.html', context)
+
+@login_required(login_url='login')
+def admin_summaries(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    # Get filter parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    # Base queryset
+    summaries = Summary.objects.all().order_by('-start_date')
+    
+    # Apply filters
+    if start_date:
+        summaries = summaries.filter(start_date__gte=start_date)
+    if end_date:
+        summaries = summaries.filter(end_date__lte=end_date)
+    
+    # Get data for charts
+    periods = [summary.period for summary in summaries[:7]]
+    occupancy_data = [summary.total_occupancy for summary in summaries[:7]]
+    revenue_data = [float(summary.total_revenue) for summary in summaries[:7]]
+    
+    # Calculate totals
+    total_spots = ParkingSpot.objects.count()
+    total_occupancy = sum(summary.total_occupancy for summary in summaries) / len(summaries) if summaries else 0
+    total_reservations = sum(summary.total_reservations for summary in summaries)
+    total_revenue = sum(float(summary.total_revenue) for summary in summaries)
+    
+    # Pagination
+    paginator = Paginator(summaries, 10)
+    page = request.GET.get('page')
+    summaries = paginator.get_page(page)
+    
+    context = {
+        'summaries': summaries,
+        'total_spots': total_spots,
+        'total_occupancy': round(total_occupancy, 2),
+        'total_reservations': total_reservations,
+        'total_revenue': total_revenue,
+        'periods': json.dumps(periods),
+        'occupancy_data': json.dumps(occupancy_data),
+        'revenue_data': json.dumps(revenue_data),
+    }
+    
+    return render(request, 'park/admin/summaries.html', context)
+
+@login_required(login_url='login')
+def admin_users(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    # Get filter parameters
+    status = request.GET.get('status')
+    verified = request.GET.get('verified')
+    search = request.GET.get('search')
+    
+    # Base queryset
+    users = User.objects.all().order_by('-date_joined')
+    
+    # Apply filters
+    if status == 'active':
+        users = users.filter(is_active=True)
+    elif status == 'inactive':
+        users = users.filter(is_active=False)
+    
+    if verified == 'true':
+        users = users.filter(profile__is_verified=True)
+    elif verified == 'false':
+        users = users.filter(profile__is_verified=False)
+    
+    if search:
+        users = users.filter(
+            Q(username__icontains=search) |
+            Q(email__icontains=search)
+        )
+    
+    # Pagination
+    paginator = Paginator(users, 10)
+    page = request.GET.get('page')
+    users = paginator.get_page(page)
+    
+    context = {
+        'users': users,
+    }
+    
+    return render(request, 'park/admin/users.html', context)
+
+# @login_required(login_url='login')
+# def admin_settings(request):
+#     if not request.user.is_staff:
+#         return redirect('dashboard')
+    
+#     if request.method == 'POST':
+#         # Update settings
+#         settings = get_object_or_404(Settings, id=1)
+        
+#         # Parking settings
+#         settings.base_hourly_rate = request.POST.get('base_hourly_rate')
+#         settings.overtime_rate_multiplier = request.POST.get('overtime_rate_multiplier')
+#         settings.max_daily_rate = request.POST.get('max_daily_rate')
+#         settings.grace_period = request.POST.get('grace_period')
+        
+#         # Reservation settings
+#         settings.max_reservation_duration = request.POST.get('max_reservation_duration')
+#         settings.min_notice_period = request.POST.get('min_notice_period')
+#         settings.max_advance_booking = request.POST.get('max_advance_booking')
+#         settings.cancellation_window = request.POST.get('cancellation_window')
+        
+#         # Notification settings
+#         settings.expiration_warning = request.POST.get('expiration_warning')
+#         settings.overtime_warning = request.POST.get('overtime_warning')
+#         settings.enable_email_notifications = 'enable_email_notifications' in request.POST
+#         settings.enable_sms_notifications = 'enable_sms_notifications' in request.POST
+        
+#         # System settings
+#         settings.maintenance_mode = 'maintenance_mode' in request.POST
+#         settings.enable_auto_logistics = 'enable_auto_logistics' in request.POST
+#         settings.enable_auto_summary = 'enable_auto_summary' in request.POST
+#         settings.summary_period = request.POST.get('summary_period')
+        
+#         settings.save()
+#         messages.success(request, 'Settings updated successfully.')
+#         return redirect('admin_settings')
+    
+#     # Get current settings
+#     settings = get_object_or_404(Settings, id=1)
+    
+#     context = {
+#         'settings': settings,
+#     }
+    
+#     return render(request, 'park/admin/settings.html', context)
+
+@login_required(login_url='login')
+def admin_reservation_detail(request, reservation_id):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    reservation = get_object_or_404(Reservation, id=reservation_id)
+    context = {
+        'reservation': reservation,
+    }
+    return render(request, 'park/admin/reservation_detail.html', context)

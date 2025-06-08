@@ -1,0 +1,124 @@
+{% extends 'park/admin/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4 class="fw-bold py-3 mb-4">Reservations Management</h4>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <!-- <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+              <option value="">All</option>
+              <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+              <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+              <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+          </div> -->
+          <div class="col-md-3">
+            <label class="form-label">Date Range</label>
+            <input type="date" name="date" class="form-control" value="{{ request.GET.date }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Search</label>
+            <input type="text" name="search" class="form-control" placeholder="Search by user or spot..." value="{{ request.GET.search }}">
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">Filter</button>
+            <a href="{% url 'admin_reservations' %}" class="btn btn-outline-secondary">Reset</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Reservations Table -->
+    <div class="card">
+      <div class="table-responsive text-nowrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Spot</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for reservation in reservations %}
+            <tr>
+              <td>{{ reservation.user.username }}</td>
+              <td>{{ reservation.spot.spot_number }}</td>
+              <td>{{ reservation.start_time|date:"M d, Y H:i" }}</td>
+              <td>{{ reservation.end_time|date:"M d, Y H:i" }}</td>
+              <td>
+                <span class="badge {% if reservation.status == 'active' %}bg-label-success{% elif reservation.status == 'completed' %}bg-label-info{% else %}bg-label-danger{% endif %}">
+                  {{ reservation.status|title }}
+                </span>
+              </td>
+              <td>
+                <div class="dropdown">
+                  <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                    <i class="bx bx-dots-vertical-rounded"></i>
+                  </button>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{% url 'admin_reservation_detail' reservation.id %}">
+                      <i class="bx bx-detail me-1"></i> View Details
+                    </a>
+                    {% if reservation.status == 'active' %}
+                    <a class="dropdown-item" href="{% url 'admin_reservation_cancel' reservation.id %}">
+                      <i class="bx bx-x-circle me-1"></i> Cancel
+                    </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center">No reservations found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if reservations.has_other_pages %}
+    <div class="d-flex justify-content-center mt-4">
+      <nav aria-label="Page navigation">
+        <ul class="pagination">
+          {% if reservations.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ reservations.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          {% endif %}
+
+          {% for num in reservations.paginator.page_range %}
+          <li class="page-item {% if reservations.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+          </li>
+          {% endfor %}
+
+          {% if reservations.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ reservations.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %} 

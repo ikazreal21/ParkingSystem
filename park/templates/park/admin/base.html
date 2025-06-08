@@ -74,6 +74,62 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{% static 'assets/js/config.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .layout-wrapper {
+        height: 100%;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .layout-container {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+        position: relative;
+      }
+      .layout-menu {
+        height: 100%;
+        position: fixed;
+        overflow-y: auto;
+        z-index: 1000;
+        width: 260px;
+        left: 0;
+        top: 0;
+      }
+      .layout-page {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
+      .layout-navbar {
+        height: 64px !important;
+        min-height: 64px !important;
+        max-height: 64px !important;
+        padding: 0 1.5rem;
+        position: relative;
+      }
+      .content-wrapper {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        position: relative;
+        height: calc(100vh - 64px);
+      }
+      .container-xxl {
+        padding: 1.5rem;
+        min-height: 100%;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+      }
+    </style>
   </head>
 
   <body>
@@ -87,12 +143,11 @@
           class="layout-menu menu-vertical menu bg-menu-theme"
         >
           <div class="app-brand demo">
-            <a href="{% url 'dasboard' %}" class="app-brand-link">
-              <span class="app-brand-text demo menu-text fw-bolder ms-2"
-                >TCT Parking
-              </span>
+            <a href="{% url 'admin_dashboard' %}" class="app-brand-link">
+              <span class="app-brand-text demo menu-text fw-bold ms-2"
+                >TCT Admin <br> Panel</span
+              >
             </a>
-
             <a
               href="javascript:void(0);"
               class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none"
@@ -105,39 +160,64 @@
 
           <ul class="menu-inner py-1">
             <!-- Dashboard -->
-            <li class="menu-item active">
-              <a href="{% url 'dasboard' %}" class="menu-link">
+            <li
+              class="menu-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+            >
+              <a href="{% url 'admin_dashboard' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                <div data-i18n="Analytics">Dashboard</div>
+                <div>Dashboard</div>
               </a>
             </li>
-            <li class="menu-header small text-uppercase">
-              <span class="menu-header-text">Actions</span>
-            </li>
-            <li class="menu-item">
-              <a href="{% url 'available' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-car"></i>
-                <div data-i18n="Analytics">Available Parking</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="{% url 'calendar' %}" class="menu-link">
+
+            <!-- Reservations -->
+            <li
+              class="menu-item {% if request.resolver_match.url_name == 'admin_reservations' %}active{% endif %}"
+            >
+              <a href="{% url 'admin_reservations' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div data-i18n="Analytics">Calendar</div>
+                <div>Reservations</div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="{% url 'current' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bxs-parking"></i>
-                <div data-i18n="Analytics">Reserve Parking</div>
+
+            <!-- Parked Vehicles -->
+            <li
+              class="menu-item {% if request.resolver_match.url_name == 'admin_parked' %}active{% endif %}"
+            >
+              <a href="{% url 'admin_parked' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-car"></i>
+                <div>Parked Vehicles</div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="{% url 'reserved' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bxs-car-garage"></i>
-                <div data-i18n="Analytics">History</div>
+
+            <!-- Logistics -->
+            <li
+              class="menu-item {% if request.resolver_match.url_name == 'admin_logistics' %}active{% endif %}"
+            >
+              <a href="{% url 'admin_logistics' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-stats"></i>
+                <div>Logistics</div>
               </a>
             </li>
+
+            <!-- Summaries -->
+            <li
+              class="menu-item {% if request.resolver_match.url_name == 'admin_summaries' %}active{% endif %}"
+            >
+              <a href="{% url 'admin_summaries' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-file"></i>
+                <div>Summaries</div>
+              </a>
+            </li>
+
+            <!-- Settings -->
+            <!-- <li
+              class="menu-item {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %}"
+            >
+              <a href="" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cog"></i>
+                <div>Settings</div>
+              </a>
+            </li> -->
           </ul>
         </aside>
         <!-- / Menu -->
@@ -180,19 +260,6 @@
               <!-- /Search -->
 
               <ul class="navbar-nav flex-row align-items-center ms-auto">
-                <!-- Schematic Button -->
-                <li class="nav-item me-3">
-                  <button
-                    type="button"
-                    class="btn btn-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#schematicModal"
-                  >
-                    <i class="bx bx-map me-1"></i>
-                    View Schematic
-                  </button>
-                </li>
-                <!-- End Schematic Button -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                   <a
                     class="nav-link dropdown-toggle hide-arrow"
@@ -230,12 +297,6 @@
                       <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="{% url 'user_profile' %}">
-                        <i class="bx bx-user me-2"></i>
-                        <span class="align-middle">My Profile</span>
-                      </a>
-                    </li>
-                    <li>
                       <div class="dropdown-divider"></div>
                     </li>
                     <li>
@@ -256,6 +317,7 @@
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
+
             <div class="container-xxl flex-grow-1 container-p-y">
               {% block content %} {% endblock %}
             </div>
@@ -271,51 +333,6 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
-
-    <!-- Schematic Modal -->
-    <div
-      class="modal fade"
-      id="schematicModal"
-      tabindex="-1"
-      aria-labelledby="schematicModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="schematicModalLabel">
-              Parking System Schematic
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="text-center">
-              <img
-                src="https://minio.ellequin.com/parking/diagram.png"
-                alt="Parking System Schematic"
-                class="img-fluid"
-                style="max-width: 100%; height: auto"
-              />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- End Schematic Modal -->
 
     <!-- <div class="buy-now">
       <a

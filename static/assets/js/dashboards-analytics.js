@@ -617,7 +617,7 @@
             },
             value: {
               formatter: function (val) {
-                return '$' + parseInt(val);
+                return '₱' + parseInt(val);
               },
               offsetY: 5,
               color: '#697a8d',

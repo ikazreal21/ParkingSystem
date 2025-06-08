@@ -66,4 +66,16 @@ urlpatterns = [
     # Logistics and Summary
     path('logistics/', views.logistics_view, name='logistics'),
     path('summary/', views.summary_view, name='summary'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+
+    # Admin Dashboard URLs
+    path('admins/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admins/reservations/', views.admin_reservations, name='admin_reservations'),
+    path('admins/reservations/<uuid:reservation_id>/', views.admin_reservation_detail, name='admin_reservation_detail'),
+    path('admins/parked/', views.admin_parked, name='admin_parked'),
+    path('admins/parked/<uuid:parked_id>/', views.admin_parked_detail, name='admin_parked_detail'),
+    path('admins/logistics/', views.admin_logistics, name='admin_logistics'),
+    path('admins/summaries/', views.admin_summaries, name='admin_summaries'),
+    path('admins/users/', views.admin_users, name='admin_users'),
+    # path('admins/settings/', views.admin_settings, name='admin_settings'),
 ]

@@ -1,5 +1,7 @@
-{% extends 'park/base.html' %} {% load static %} {% block content %} {% if
-messages %} {% for message in messages %} {% if message.tags == 'error' %}
+{% extends 'park/base.html' %} {% load static %} {% block content %} 
+{% if messages %} 
+{% for message in messages %} 
+{% if message.tags == 'error' %}
 <div
   class="alert alert-danger alert-left-bordered border-danger alert-dismissible d-flex align-items-center p-md-4 mb-2 fade show"
   role="alert"
@@ -19,7 +21,9 @@ messages %} {% for message in messages %} {% if message.tags == 'error' %}
     <strong>{{ message }}</strong>
   </p>
 </div>
-{% endif %} {% endfor %} {% endif %}
+{% endif %} 
+{% endfor %} 
+{% endif %}
 <h1>Parking Spots</h1>
 <div class="row mb-5">
   {% for spot in spots %}

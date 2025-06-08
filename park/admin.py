@@ -30,9 +30,9 @@ class ParkingSpotAdmin(admin.ModelAdmin):
     ordering = ('spot_number',)
 
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'spot', 'start_time', 'end_time', 'status', 'is_active')
+    list_display = ('user', 'spot', 'reference_number', 'start_time', 'end_time', 'status', 'is_active')
     list_filter = ('status', 'is_active', 'start_time', 'end_time')
-    search_fields = ('user__username', 'spot__name')
+    search_fields = ('user__username', 'spot__name', 'reference_number')
     date_hierarchy = 'start_time'
 
 class ParkedAdmin(admin.ModelAdmin):

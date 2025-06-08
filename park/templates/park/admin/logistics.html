@@ -1,0 +1,240 @@
+{% extends 'park/admin/base.html' %} {% load static %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4 class="fw-bold py-3 mb-4">Logistics Management</h4>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Date Range</label>
+            <div class="input-group">
+              <input
+                type="date"
+                name="start_date"
+                class="form-control"
+                value="{{ request.GET.start_date }}"
+              />
+              <span class="input-group-text">to</span>
+              <input
+                type="date"
+                name="end_date"
+                class="form-control"
+                value="{{ request.GET.end_date }}"
+              />
+            </div>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">Filter</button>
+            <a
+              href="{% url 'admin_logistics' %}"
+              class="btn btn-outline-secondary"
+              >Reset</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-3 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <span class="fw-semibold d-block mb-1">Total Spots</span>
+            <h3 class="card-title mb-2">{{total_spots}}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <span class="fw-semibold d-block mb-1">Occupied Spots</span>
+            <h3 class="card-title mb-2">{{occupied_spots}}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <span class="fw-semibold d-block mb-1">Reserved Spots</span>
+            <h3 class="card-title mb-2">{{reserved_spots}}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <span class="fw-semibold d-block mb-1">Total Revenue</span>
+            <h3 class="card-title mb-2">₱{{total_revenue}}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+      <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="card-title m-0">Spot Utilization</h5>
+          </div>
+          <div class="card-body">
+            <canvas id="spotUtilizationChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="card-title m-0">Daily Revenue</h5>
+          </div>
+          <div class="card-body">
+            <canvas id="revenueChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logistics Table -->
+    <div class="card" style="margin-bottom: 20px">
+      <div class="table-responsive text-nowrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Total Spots</th>
+              <th>Occupied Spots</th>
+              <th>Reserved Spots</th>
+              <th>Available Spots</th>
+              <th>Total Revenue</th>
+              <th>Exceeded Hours</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for log in logistics %}
+            <tr>
+              <td>{{ log.date|date:"M d, Y" }}</td>
+              <td>{{ log.total_spots }}</td>
+              <td>{{ log.occupied_spots }}</td>
+              <td>{{ log.reserved_spots }}</td>
+              <td>{{ log.available_spots }}</td>
+              <td>₱{{ log.total_revenue }}</td>
+              <td>{{ log.exceeded_hours }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center">No logistics data found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if logistics.has_other_pages %}
+    <div class="d-flex justify-content-center mt-4">
+      <nav aria-label="Page navigation">
+        <ul class="pagination">
+          {% if logistics.has_previous %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="?page={{ logistics.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+              aria-label="Previous"
+            >
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          {% endif %} {% for num in logistics.paginator.page_range %}
+          <li
+            class="page-item {% if logistics.number == num %}active{% endif %}"
+          >
+            <a
+              class="page-link"
+              href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+              >{{ num }}</a
+            >
+          </li>
+          {% endfor %} {% if logistics.has_next %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="?page={{ logistics.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+              aria-label="Next"
+            >
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Spot Utilization Chart
+  const spotUtilizationCtx = document.getElementById('spotUtilizationChart').getContext('2d');
+  new Chart(spotUtilizationCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ dates|safe }},
+      datasets: [{
+        label: 'Occupied Spots',
+        data: {{ occupied_spots_data|safe }},
+        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+        borderColor: 'rgb(40, 167, 69)',
+        borderWidth: 1
+      }, {
+        label: 'Reserved Spots',
+        data: {{ reserved_spots_data|safe }},
+        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+        borderColor: 'rgb(0, 123, 255)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // Revenue Chart
+  const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+  new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+      labels: {{ dates|safe }},
+      datasets: [{
+        label: 'Daily Revenue',
+        data: {{ revenue_data|safe }},
+        fill: false,
+        borderColor: 'rgb(255, 193, 7)',
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+{% endblock %} {% endblock %}

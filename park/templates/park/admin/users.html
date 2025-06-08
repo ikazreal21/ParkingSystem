@@ -1,0 +1,142 @@
+{% extends 'park/admin/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4 class="fw-bold py-3 mb-4">Users Management</h4>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+              <option value="">All</option>
+              <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+              <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Verification</label>
+            <select name="verified" class="form-select">
+              <option value="">All</option>
+              <option value="true" {% if request.GET.verified == 'true' %}selected{% endif %}>Verified</option>
+              <option value="false" {% if request.GET.verified == 'false' %}selected{% endif %}>Unverified</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Search</label>
+            <input type="text" name="search" class="form-control" placeholder="Search by username or email..." value="{{ request.GET.search }}">
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">Filter</button>
+            <a href="{% url 'admin_users' %}" class="btn btn-outline-secondary">Reset</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+      <div class="table-responsive text-nowrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Verified</th>
+              <th>Date Joined</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for user in users %}
+            <tr>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="badge {% if user.is_active %}bg-label-success{% else %}bg-label-danger{% endif %}">
+                  {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+              </td>
+              <td>
+                <span class="badge {% if user.profile.is_verified %}bg-label-success{% else %}bg-label-warning{% endif %}">
+                  {% if user.profile.is_verified %}Verified{% else %}Unverified{% endif %}
+                </span>
+              </td>
+              <td>{{ user.date_joined|date:"M d, Y" }}</td>
+              <td>{{ user.last_login|date:"M d, Y H:i" }}</td>
+              <td>
+                <div class="dropdown">
+                  <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                    <i class="bx bx-dots-vertical-rounded"></i>
+                  </button>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{% url 'admin_user_detail' user.id %}">
+                      <i class="bx bx-detail me-1"></i> View Details
+                    </a>
+                    {% if not user.profile.is_verified %}
+                    <a class="dropdown-item" href="{% url 'admin_user_verify' user.id %}">
+                      <i class="bx bx-check-circle me-1"></i> Verify User
+                    </a>
+                    {% endif %}
+                    {% if user.is_active %}
+                    <a class="dropdown-item" href="{% url 'admin_user_deactivate' user.id %}">
+                      <i class="bx bx-user-x me-1"></i> Deactivate
+                    </a>
+                    {% else %}
+                    <a class="dropdown-item" href="{% url 'admin_user_activate' user.id %}">
+                      <i class="bx bx-user-check me-1"></i> Activate
+                    </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center">No users found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if users.has_other_pages %}
+    <div class="d-flex justify-content-center mt-4">
+      <nav aria-label="Page navigation">
+        <ul class="pagination">
+          {% if users.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ users.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          {% endif %}
+
+          {% for num in users.paginator.page_range %}
+          <li class="page-item {% if users.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+          </li>
+          {% endfor %}
+
+          {% if users.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ users.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %} 
