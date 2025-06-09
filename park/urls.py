@@ -78,4 +78,5 @@ urlpatterns = [
     path('admins/summaries/', views.admin_summaries, name='admin_summaries'),
     path('admins/users/', views.admin_users, name='admin_users'),
     # path('admins/settings/', views.admin_settings, name='admin_settings'),
+    path('reservations/<uuid:reservation_id>/download/', views.download_reservation_pdf, name='download_reservation_pdf'),
 ]

@@ -40,6 +40,12 @@ from django.contrib.auth.models import AnonymousUser
 import pytz
 from django.core.paginator import Paginator
 import json
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
 
 
 
@@ -133,6 +139,8 @@ def Reviews(request):
 def Login(request):
     if request.user.is_authenticated:
         if request.user.is_staff:
+            if request.user.is_superuser:
+                return redirect('admin_dashboard')
             return redirect('admin_dashboard')
         else:
             return redirect('dashboard')
@@ -143,6 +151,10 @@ def Login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+                if user.is_staff:
+                    if user.is_superuser:
+                        return redirect('admin_dashboard')
+                    return redirect('admin_dashboard')
                 return redirect("dashboard")
             else:
                 messages.info(request, "Username or Password is Incorrect")
@@ -1092,3 +1104,98 @@ def admin_reservation_detail(request, reservation_id):
         'reservation': reservation,
     }
     return render(request, 'park/admin/reservation_detail.html', context)
+
+@login_required(login_url='login')
+def download_reservation_pdf(request, reservation_id):
+    # Get the reservation
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    
+    # Set timezone to Asia/Manila
+    manila_tz = pytz.timezone('Asia/Manila')
+    current_time = localtime(now(), manila_tz)
+    
+    # Create a BytesIO buffer to receive the PDF data
+    buffer = BytesIO()
+    
+    # Create the PDF object, using the buffer as its "file"
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
+    
+    # Container for the 'Flowable' objects
+    elements = []
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        alignment=1  # Center alignment
+    )
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        spaceAfter=12
+    )
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=12,
+        spaceAfter=8
+    )
+    
+    # Add content
+    elements.append(Paragraph("Parking Reservation Details", title_style))
+    elements.append(Spacer(1, 20))
+    
+    # Add QR code if it exists
+    if reservation.qr:
+        try:
+            qr_path = reservation.qr.path
+            img = Image(qr_path, width=2*inch, height=2*inch)
+            elements.append(img)
+            elements.append(Spacer(1, 20))
+        except:
+            pass  # Skip if QR code can't be loaded
+    
+    # Reservation Information
+    elements.append(Paragraph("Reservation Information", heading_style))
+    elements.append(Paragraph(f"Reference Number: {reservation.reference_number}", normal_style))
+    elements.append(Paragraph(f"Status: {reservation.status.title()}", normal_style))
+    elements.append(Paragraph(f"Parking Spot: {reservation.spot.name} (Spot Number: {reservation.spot.spot_number})", normal_style))
+    elements.append(Paragraph(f"Plate Number: {reservation.plate_number}", normal_style))
+    
+    # Convert times to Manila timezone
+    start_time = reservation.start_time.astimezone(manila_tz)
+    end_time = reservation.end_time.astimezone(manila_tz)
+    
+    elements.append(Paragraph(f"Start Time: {start_time.strftime('%B %d, %Y %I:%M %p')}", normal_style))
+    elements.append(Paragraph(f"End Time: {end_time.strftime('%B %d, %Y %I:%M %p')}", normal_style))
+    elements.append(Paragraph(f"User: {reservation.user.username}", normal_style))
+    
+    # Add footer
+    elements.append(Spacer(1, 30))
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.gray,
+        alignment=1  # Center alignment
+    )
+    elements.append(Paragraph("This is an official document from the parking system.", footer_style))
+    elements.append(Paragraph(f"Generated on: {current_time.strftime('%B %d, %Y %I:%M %p')}", footer_style))
+    
+    # Build the PDF
+    doc.build(elements)
+    
+    # Get the value of the BytesIO buffer
+    pdf = buffer.getvalue()
+    buffer.close()
+    
+    # Create the HTTP response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="reservation_{reservation.id}.pdf"'
+    response.write(pdf)
+    
+    return response
